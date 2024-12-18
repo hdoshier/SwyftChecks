@@ -4,11 +4,11 @@ import healthcheck.data.Database;
 import healthcheck.data.Office;
 import healthcheck.gui.MainWindow;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import javax.swing.*;
 
 /**
  *The ExpensePanel gui class.
@@ -19,7 +19,7 @@ import javax.swing.*;
  *
  *@version 0.1
  */
-public class OfficePanel extends JPanel implements ActionListener {
+public class OfficeInfoPanel extends JPanel implements ActionListener {
     MainWindow parent;
     GridBagConstraints mainGbc;
     JPanel searchPanel;
@@ -35,7 +35,7 @@ public class OfficePanel extends JPanel implements ActionListener {
      *@param parent is the parent window.
      *
      */
-    public OfficePanel(MainWindow parent) {
+    public OfficeInfoPanel(MainWindow parent) {
         this.database = Database.getInstance();
         this.parent = parent;
         this.setPreferredSize(new Dimension(850, 600));

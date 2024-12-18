@@ -1,5 +1,6 @@
 package healthcheck;
 
+import healthcheck.data.DataImport;
 import healthcheck.gui.MainWindow;
 
 import javax.swing.*;
@@ -12,6 +13,10 @@ public class Main {
     public static void main(String[] args) {
 
         System.out.println("Hello");
+
+        String filepath = "src/main/csvdata/Offices.csv";
+
+        DataImport.importOfficeData(filepath);
 
         runGui();
     }

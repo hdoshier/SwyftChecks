@@ -104,4 +104,20 @@ public class Office implements Serializable {
         this.trainingStatus = trainingStatus;
     }
 
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.officeCode);
+        sb.append(" | ");
+
+        sb.append(this.officeName);
+        sb.append(" | ");
+
+        sb.append(this.officeOwner);
+        sb.append(" | ");
+
+        sb.append(this.officePrimaryContactEmail);
+        return sb.toString();
+    }
+
 }

@@ -27,7 +27,7 @@ public class MainWindow extends JFrame {
      */
     public MainWindow() {
         this.setPreferredSize(new Dimension(1100, 600));
-        this.setTitle("Health Checker");
+        this.setTitle("SwyftChecks");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(new GridBagLayout());
         this.mainPanel = null;

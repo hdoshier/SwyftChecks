@@ -1,16 +1,11 @@
 package healthcheck.gui;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.*;
 
 /**
  *The NavigationPanel gui class.
@@ -27,6 +22,7 @@ public class NavigationPanel extends JPanel implements ActionListener {
     JButton weeklyButton;
     JButton expenseButton;
     JButton incomeButton;
+    JPanel activePanel;
 
     /**
      *Constructs the panel.
@@ -37,50 +33,64 @@ public class NavigationPanel extends JPanel implements ActionListener {
     public NavigationPanel(MainWindow parent) {
         this.parent = parent;
         this.setPreferredSize(new Dimension(250, 600));
-        this.setLayout(new GridBagLayout());
-        this.setBackground(Color.white);
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.setBorder(BorderFactory.createLineBorder(Color.black));
+        this.setBackground(new Color(0, 120, 150));
+
+        // Create navigation panel
+        JPanel navigationPanel = new JPanel();
+        navigationPanel.setBackground(new Color(0, 120, 150)); // Base color
+        navigationPanel.setLayout(new BoxLayout(navigationPanel, BoxLayout.Y_AXIS));
+
+        // Add menu items
+        addNavItem(navigationPanel, "Home", false);
+        addNavItem(navigationPanel, "Offices", true);
+        addNavItem(navigationPanel, "Health Checks", false);
+        addNavItem(navigationPanel, "Reports", false);
+        addNavItem(navigationPanel, "Settings", false);
 
 
-        GridBagConstraints mainGbc = new GridBagConstraints();
 
-        mainGbc.weightx = 1.0;
-        mainGbc.insets = new Insets(2, 2, 2, 2);
+    }
 
-        //nav lavel
-        JLabel navLabel = new JLabel("Navigation Menu");
-        mainGbc.anchor = GridBagConstraints.PAGE_START;
-        this.add(navLabel, mainGbc);
+    private void addNavItem(JPanel panel, String name, boolean isActive){
+        JLabel navItem = new JLabel(name);
+        navItem.setOpaque(true);
+        navItem.setBackground(isActive ? new Color(255, 140, 0) : new Color(0, 120, 150)); // Highlight active
+        navItem.setForeground(Color.WHITE);
+        navItem.setFont(new Font("Arial", Font.PLAIN, 16));
+        navItem.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 10)); // Padding
+        //navItem.setAlignmentX(Component.CENTER_ALIGNMENT);
+        navItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
-        //monthly button
-        mainGbc.gridy = 1;
-        mainGbc.fill = GridBagConstraints.BOTH;
-        mainGbc.anchor = GridBagConstraints.CENTER;
-        this.monthlyButton = new JButton("Home");
-        monthlyButton.setActionCommand("home");
-        monthlyButton.addActionListener(this);
-        this.add(monthlyButton, mainGbc);
+        // Add hover effect
+        navItem.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                navItem.setBackground(new Color(255, 140, 0));
+            }
 
-        //weekly button
-        mainGbc.gridy = 2;
-        this.weeklyButton = new JButton("Offices");
-        weeklyButton.setActionCommand("offices");
-        weeklyButton.addActionListener(this);
-        this.add(weeklyButton, mainGbc);
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (!isActive) navItem.setBackground(new Color(0, 120, 150));
+            }
 
-        //expense button
-        mainGbc.gridy = 3;
-        this.expenseButton = new JButton("Health Checks");
-        expenseButton.setActionCommand("hc");
-        expenseButton.addActionListener(this);
-        this.add(expenseButton, mainGbc);
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Change the active item
+                if (activePanel != null) {
+                    activePanel.setBackground(new Color(0, 120, 150)); // Reset previous active
+                }
+                activePanel = panel; // Update active item
+                navItem.setBackground(new Color(255, 140, 0)); // Highlight active item
 
-        //income button
-        mainGbc.gridy = 4;
-        this.incomeButton = new JButton("Reports");
-        incomeButton.setActionCommand("reports");
-        incomeButton.addActionListener(this);
-        this.add(incomeButton, mainGbc);
+                // Perform action (switch view, print message, etc.)
+                System.out.println(name + " clicked");
+            }
+        });
+
+        panel.add(navItem);
+        this.add(panel);
     }
 
 
@@ -98,6 +108,9 @@ public class NavigationPanel extends JPanel implements ActionListener {
         }
         if ("reports".equals(e.getActionCommand())) {
             //parent.loadPanel(new IncomePanel(parent));
+        }
+        if ("settings".equals(e.getActionCommand())) {
+            //parent.loadPanel(new SettingsPanel(parent));
         }
     }
 }

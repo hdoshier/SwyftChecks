@@ -17,7 +17,6 @@ public class Database implements Serializable {
         officeMap = new HashMap<>();
         excludedOffices = new HashSet<>(50);
         officeList = new ArrayList<>();
-        officeList.add(new Office("DEV KS WTC"));
     }
 
     public static Database getInstance() {
