@@ -1,14 +1,20 @@
 package healthcheck.gui.mainpanels;
 
-import healthcheck.data.Database;
 import healthcheck.data.Office;
 import healthcheck.gui.MainWindow;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.HashMap;
+
+import com.github.lgooddatepicker.components.DatePicker;
 
 /**
  *The ExpensePanel gui class.
@@ -21,13 +27,7 @@ import java.util.ArrayList;
  */
 public class OfficeInfoPanel extends JPanel implements ActionListener {
     MainWindow parent;
-    GridBagConstraints mainGbc;
-    JPanel searchPanel;
-    JPanel managePanel;
-    JScrollPane officePane;
-    JList<Office> officeList;
-    DefaultListModel model;
-    Database database;
+    Office office;
 
     /**
      *Constructs the panel.
@@ -35,108 +35,172 @@ public class OfficeInfoPanel extends JPanel implements ActionListener {
      *@param parent is the parent window.
      *
      */
-    public OfficeInfoPanel(MainWindow parent) {
-        this.database = Database.getInstance();
+    public OfficeInfoPanel(MainWindow parent, Office office) {
+        this.office = office;
+
         this.parent = parent;
-        this.setPreferredSize(new Dimension(850, 600));
         this.setLayout(new GridBagLayout());
-
-        mainGbc = new GridBagConstraints();
-        mainGbc.insets = new Insets(2, 2, 2, 2);
-        mainGbc.weightx = 1.0;
-        mainGbc.fill = GridBagConstraints.BOTH;
-
-        // search panel
-        mainGbc.gridy = 0;
-        this.searchPanel = null;
-        this.buildSearchPanel();
-
-        // manage panel
-        mainGbc.gridy = 1;
-        this.managePanel = null;
-        this.buildManagePanel();
-
-        // list panel
-        mainGbc.gridy = 2;
-        mainGbc.weighty = 1.0;
-        this.buildListPanel();
-    }
-
-
-
-    private void buildSearchPanel() {
-        if (this.searchPanel != null) {
-            this.remove(searchPanel);
-        }
-        searchPanel = new JPanel();
-        searchPanel.setLayout(new GridBagLayout());
-        searchPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        searchPanel.setBackground(new Color(255, 242, 204));
+        this.setPreferredSize(new Dimension(850, 600));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(2, 2, 2, 2);
         gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
 
+        // navigation panel
         gbc.gridx = 0;
         gbc.gridy = 0;
-        JLabel searchLabel = new JLabel("Search");
-        searchPanel.add(searchLabel, gbc);
+        this.add(buildNavPanel(), gbc);
 
-        gbc.gridx = 0;
+        // office data/info panel
         gbc.gridy = 1;
-        JTextField nameSearch = new JTextField();
-        nameSearch.setPreferredSize(new Dimension(150, 20));
-        searchPanel.add(nameSearch, gbc);
+        gbc.weighty = 1.0;
+        this.add(buildInfoPanel(), gbc);
 
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        JTextField statusSearch = new JTextField();
-        statusSearch.setPreferredSize(new Dimension(150, 20));
-        searchPanel.add(statusSearch, gbc);
+        // office billable hour history panel
+        gbc.gridy = 2;
+        gbc.weighty = 0.09;
+        this.add(buildBillableHoursPanel(), gbc);
 
-        gbc.gridx = 2;
-        gbc.gridy = 1;
-        JButton searchButton = new JButton("Search");
-        searchButton.setActionCommand("search");
-        searchButton.addActionListener(this);
-        searchPanel.add(searchButton, gbc);
-
-        this.add(searchPanel, mainGbc);
     }
 
-    private void buildManagePanel() {
-        managePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        managePanel.setBackground(new Color(248, 248, 248));
-        managePanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
 
+    private JPanel buildNavPanel() {
+        JPanel navPanel = new JPanel();
+        navPanel.setBackground(new Color(0, 122, 178)); // Base color
+        navPanel.setLayout(new GridBagLayout());
+
+        GridBagConstraints navGbc = new GridBagConstraints();
+        navGbc.gridx = 0;
+        navGbc.gridy = 0;
+        navGbc.weightx = 1.0;
+
+        // nav options
+        //configure nav options panel
+        JPanel navOptionsPanel = new JPanel();
+        navOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        navOptionsPanel.setBackground(new Color(0, 122, 178));
+        //add nav options
+        addNavItem(navOptionsPanel, office.getOfficeCode(), true);
+        addNavItem(navOptionsPanel, "Health Check History", false);
+        navPanel.add(navOptionsPanel, navGbc);
 
 
-        JButton addNewButton = new JButton("Add New");
-        addNewButton.setActionCommand("addNew");
-        addNewButton.addActionListener(this);
-        managePanel.add(addNewButton);
+        // have save button be on the far right
+        navGbc.gridx = 1;
+        navGbc.weightx = 0;
+        // save panel config
+        JPanel navSavePanel = new JPanel();
+        navOptionsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        navSavePanel.setBackground(new Color(0, 122, 178));
+        JButton saveButton = new JButton("Save");
+        saveButton.setActionCommand("save");
+        saveButton.addActionListener(this);
+        navSavePanel.add(saveButton);
+        navPanel.add(navSavePanel, navGbc);
 
-
-        JButton globalSetButton = new JButton("Global Set");
-        globalSetButton.setActionCommand("globalSet");
-        globalSetButton.addActionListener(this);
-        managePanel.add(globalSetButton);
-
-        this.add(managePanel, mainGbc);
+        return navPanel;
     }
 
-    private void buildListPanel() {
-        model = new DefaultListModel();
-        ArrayList<Office> allOffices = database.getOfficeList();
-        for (Office i : allOffices) {
-            model.addElement(i);
+    private void addNavItem(JPanel panel, String name, boolean isActive){
+        JLabel navItem = new JLabel(name);
+        navItem.setOpaque(true);
+        navItem.setBackground(isActive ? new Color(255, 151, 25) : new Color(0, 122, 178)); // Highlight active
+        navItem.setForeground(Color.WHITE);
+        navItem.setFont(new Font("Arial", Font.PLAIN, 16));
+        navItem.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 10)); // Padding
+        navItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+
+        // Add hover effect
+        navItem.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                navItem.setBackground(new Color(255, 151, 25));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (!isActive) navItem.setBackground(new Color(0, 122, 178));
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Perform action (switch view, print message, etc.)
+                System.out.println(name + " clicked");
+            }
+        });
+
+        panel.add(navItem);
+    }
+
+    private JPanel buildInfoPanel() {
+        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        infoPanel.setBackground(new Color(248, 248, 248));
+        infoPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+
+        addJTextDetailsPanel(infoPanel, "Office Name", new JTextField(office.getOfficeName()));
+        addJTextDetailsPanel(infoPanel, "Owner", new JTextField(office.getOfficeOwner()));
+        addJTextDetailsPanel(infoPanel, "Owner Email", new JTextField(office.getOfficeOwnerEmail()));
+        addJTextDetailsPanel(infoPanel, "Primary Contact", new JTextField(office.getOfficePrimaryContactPerson()));
+        addJTextDetailsPanel(infoPanel, "Primary Contact Email", new JTextField(office.getOfficePrimaryContactEmail()));
+
+        addDateFieldDetailsPanel(infoPanel, "Last Health Check Date", office.getLastHealthCheckDate());
+        addDateFieldDetailsPanel(infoPanel, "Agreement Date", office.getExecAgreementDate());
+
+        //addJTextDetailsPanel(infoPanel, "Training Status", office.getTrainingStatus(), officeOwnerEmail);
+        addJTextDetailsPanel(infoPanel, "General Notes", new JTextArea(office.getGeneralNotes(), 7, 7));
+        addJTextDetailsPanel(infoPanel, "Leadership Notes", new JTextArea(office.getLeadershipNotes(), 7, 7));
+
+
+
+        return infoPanel;
+    }
+
+    private void addJTextDetailsPanel (JPanel infoPanel, String labelText, JTextComponent textField) {
+        JPanel textPanel = new JPanel();
+        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+        JLabel label = new JLabel(labelText);
+        textPanel.add(label);
+        textPanel.add(textField);
+
+        infoPanel.add(textPanel);
+
+        if (textField instanceof JTextArea textArea) {
+            textArea.setLineWrap(true);
         }
-        officeList = new JList(model);
-        officePane = new JScrollPane(officeList);
-
-        this.add(officePane, mainGbc);
     }
+
+    private void addDateFieldDetailsPanel (JPanel infoPanel, String labelText, LocalDate date) {
+        JPanel detailsPanel = new JPanel();
+        detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
+        JLabel label = new JLabel(labelText);
+        detailsPanel.add(label);
+        DatePicker dateField = new DatePicker();
+        dateField.setDate(date);
+        detailsPanel.add(dateField);
+        infoPanel.add(detailsPanel);
+    }
+
+    private JScrollPane buildBillableHoursPanel() {
+        JPanel scrollPanel = new JPanel();
+        JScrollPane scrollPane = new JScrollPane(scrollPanel);
+        scrollPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        YearMonth month = office.getMostRecentBillableHistory();
+        HashMap<YearMonth, Double> billableMap = office.getBillableHourHistory();
+        while (billableMap.containsKey(month)) {
+            JPanel detailsPanel = new JPanel();
+            detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
+            JLabel monthYear = new JLabel(month.toString());
+            detailsPanel.add(monthYear);
+            JLabel billableHours = new JLabel(String.valueOf(billableMap.get(month)));
+            detailsPanel.add(billableHours);
+            scrollPanel.add(detailsPanel);
+            month = month.minusMonths(1);
+        }
+        return scrollPane;
+    }
+
+
 
     @Override
     public void actionPerformed(ActionEvent e) {

@@ -1,6 +1,10 @@
 package healthcheck.data;
 
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -27,7 +31,9 @@ public class DataImport {
             while (importFile.hasNext()) {
                 line = importFile.nextLine();
                 String[] splitLine = line.split("~");
-                updateOfficeData(db, splitLine);
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
+                updateOfficeData(db, splitLine, formatter);
 
             }
 
@@ -44,8 +50,8 @@ public class DataImport {
      * @param db the database instance
      * @param splitLine String array containing all the office data from the CSV.
      */
-    private static void updateOfficeData(Database db, String[] splitLine) {
-        String officeCode = splitLine[0].trim();
+    private static void updateOfficeData(Database db, String[] splitLine, DateTimeFormatter formatter) {
+        String officeCode = splitLine[0].replace('-', ' ').trim();
 
         //check if it's an excluded office
         if (officeCode.contains("CFC") || db.getExcludedOffices().contains(officeCode)) {
@@ -69,7 +75,20 @@ public class DataImport {
         office.setOfficeOwnerEmail(splitLine[3].trim());
         office.setOfficePrimaryContactPerson(splitLine[2].trim());
         office.setOfficePrimaryContactEmail(splitLine[3].trim());
-        // TODO add billable hour data
+        try {
+            office.setExecAgreementDate(LocalDate.parse(splitLine[7], formatter));
+        } catch (DateTimeParseException e) {
+
+        }
+
+        // add billable hour history
+        office.addBillableHourHistory(YearMonth.now(), Double.parseDouble(splitLine[11]));
+        office.addBillableHourHistory(YearMonth.now().minusMonths(1), Double.parseDouble(splitLine[12]));
+        office.addBillableHourHistory(YearMonth.now().minusMonths(2), Double.parseDouble(splitLine[13]));
+        office.addBillableHourHistory(YearMonth.now().minusMonths(3), Double.parseDouble(splitLine[14]));
+        office.addBillableHourHistory(YearMonth.now().minusMonths(4), Double.parseDouble(splitLine[15]));
+        office.addBillableHourHistory(YearMonth.now().minusMonths(5), Double.parseDouble(splitLine[16]));
+        office.addBillableHourHistory(YearMonth.now().minusMonths(6), Double.parseDouble(splitLine[17]));
 
     }
 

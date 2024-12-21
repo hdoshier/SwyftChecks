@@ -2,7 +2,9 @@ package healthcheck.data;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Office implements Serializable {
 
@@ -15,17 +17,47 @@ public class Office implements Serializable {
     private String officeOwnerEmail = "";
     private String officePrimaryContactPerson = "";
     private String officePrimaryContactEmail = "";
-    private String leaderhsipNotes = "";
+    private String leadershipNotes = "";
     private String generalNotes = "";
     private int trainingStatus = 0;
-    private ArrayList<BillableHoursTuple> billableHourHistoryList;
+    private HashMap<YearMonth, Double> billableHourHistory;
 
 
 
     public Office(String officeCode){
         this.officeCode = officeCode;
         this.healthCheckList = new ArrayList<>(1);
-        billableHourHistoryList = new ArrayList<>(5);
+        billableHourHistory = new HashMap<>(4);
+    }
+
+    /**
+     * <p>Finds and returns the most recent month that has billable hour history.
+     *
+     * For example: If it's December 2024, but no hour history has been recorded since
+     * September 2024, this function will return YearMonth of 2024 - 09.</p>
+     *
+     * @return YearMonth
+     */
+    public YearMonth getMostRecentBillableHistory() {
+        if (billableHourHistory.isEmpty()) {
+            return null;
+        }
+
+        YearMonth month = YearMonth.now();
+        while (true) {
+            if (billableHourHistory.containsKey(month)) {
+                return month;
+            }
+            month = month.minusMonths(1);
+        }
+    }
+
+    public HashMap<YearMonth, Double> getBillableHourHistory() {
+        return billableHourHistory;
+    }
+
+    public void addBillableHourHistory(YearMonth yearMonth, Double hourCount) {
+        billableHourHistory.put(yearMonth, hourCount);
     }
 
     public String getOfficeCode() {
@@ -34,6 +66,22 @@ public class Office implements Serializable {
 
     public String getOfficeName() {
         return officeName;
+    }
+
+    public LocalDate getExecAgreementDate() {
+        return execAgreementDate;
+    }
+
+    public void setExecAgreementDate(LocalDate execAgreementDate) {
+        this.execAgreementDate = execAgreementDate;
+    }
+
+    public String getGeneralNotes() {
+        return generalNotes;
+    }
+
+    public void setGeneralNotes(String generalNotes) {
+        this.generalNotes = generalNotes;
     }
 
     public void setOfficeName(String officeName) {
@@ -88,12 +136,12 @@ public class Office implements Serializable {
         this.officePrimaryContactEmail = officePrimaryContactEmail;
     }
 
-    public String getLeaderhsipNotes() {
-        return leaderhsipNotes;
+    public String getLeadershipNotes() {
+        return leadershipNotes;
     }
 
-    public void setLeaderhsipNotes(String leaderhsipNotes) {
-        this.leaderhsipNotes = leaderhsipNotes;
+    public void setLeadershipNotes(String leaderhsipNotes) {
+        this.leadershipNotes = leaderhsipNotes;
     }
 
     public int getTrainingStatus() {

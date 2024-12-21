@@ -48,12 +48,10 @@ public class OfficePanel extends JPanel implements ActionListener {
 
         // search panel
         mainGbc.gridy = 0;
-        this.searchPanel = null;
         this.buildSearchPanel();
 
         // manage panel
         mainGbc.gridy = 1;
-        this.managePanel = null;
         this.buildManagePanel();
 
         // list panel
@@ -133,9 +131,24 @@ public class OfficePanel extends JPanel implements ActionListener {
             model.addElement(i);
         }
         officeList = new JList(model);
+        officeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        officeList.addListSelectionListener(e -> {
+            // Ensure the event is not triggered during list updates
+            if (!e.getValueIsAdjusting()) {
+                Office selectedOffice = officeList.getSelectedValue();
+                if (selectedOffice != null) {
+                    openOfficeInfoPanel(selectedOffice);
+                }
+            }
+        });
+
         officePane = new JScrollPane(officeList);
 
         this.add(officePane, mainGbc);
+    }
+
+    private void openOfficeInfoPanel(Office selectedOffice) {
+        parent.loadPanel(new OfficeInfoPanel(parent, selectedOffice));
     }
 
     @Override
