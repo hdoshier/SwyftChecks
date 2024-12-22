@@ -1,5 +1,6 @@
 package healthcheck.gui.mainpanels;
 
+import healthcheck.data.Database;
 import healthcheck.data.Office;
 import healthcheck.gui.MainWindow;
 
@@ -28,6 +29,17 @@ import com.github.lgooddatepicker.components.DatePicker;
 public class OfficeInfoPanel extends JPanel implements ActionListener {
     MainWindow parent;
     Office office;
+
+    private JTextField officeNameFieldField;
+    private DatePicker lastHealthCheckDateField;
+    private DatePicker execAgreementDateField;
+    private JTextField officeOwnerField;
+    private JTextField officeOwnerEmailField;
+    private JTextField officePrimaryContactPersonField;
+    private JTextField officePrimaryContactEmailField;
+    private JTextArea leadershipNotesField;
+    private JTextArea generalNotesField;
+    // private Spinn trainingStatusField;
 
     /**
      *Constructs the panel.
@@ -126,7 +138,8 @@ public class OfficeInfoPanel extends JPanel implements ActionListener {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // Perform action (switch view, print message, etc.)
-                System.out.println(name + " clicked");
+                System.out.println(execAgreementDateField == null);
+
             }
         });
 
@@ -138,18 +151,29 @@ public class OfficeInfoPanel extends JPanel implements ActionListener {
         infoPanel.setBackground(new Color(248, 248, 248));
         infoPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
-        addJTextDetailsPanel(infoPanel, "Office Name", new JTextField(office.getOfficeName()));
-        addJTextDetailsPanel(infoPanel, "Owner", new JTextField(office.getOfficeOwner()));
-        addJTextDetailsPanel(infoPanel, "Owner Email", new JTextField(office.getOfficeOwnerEmail()));
-        addJTextDetailsPanel(infoPanel, "Primary Contact", new JTextField(office.getOfficePrimaryContactPerson()));
-        addJTextDetailsPanel(infoPanel, "Primary Contact Email", new JTextField(office.getOfficePrimaryContactEmail()));
+        officeNameFieldField = new JTextField(office.getOfficeName());
+        officeOwnerField = new JTextField(office.getOfficeOwner());
+        officeOwnerEmailField = new JTextField(office.getOfficeOwnerEmail());
+        officePrimaryContactPersonField = new JTextField(office.getOfficePrimaryContactPerson());
+        officePrimaryContactEmailField = new JTextField(office.getOfficePrimaryContactEmail());
+        leadershipNotesField = new JTextArea(office.getLeadershipNotes(), 7, 7);
+        generalNotesField = new JTextArea(office.getGeneralNotes(), 7, 7);
+        // private Spinn trainingStatusField;
+        addJTextDetailsPanel(infoPanel, "Office Name", officeNameFieldField);
+        addJTextDetailsPanel(infoPanel, "Owner", officeOwnerField);
+        addJTextDetailsPanel(infoPanel, "Owner Email", officeOwnerEmailField);
+        addJTextDetailsPanel(infoPanel, "Primary Contact", officePrimaryContactPersonField);
+        addJTextDetailsPanel(infoPanel, "Primary Contact Email", officePrimaryContactEmailField);
 
-        addDateFieldDetailsPanel(infoPanel, "Last Health Check Date", office.getLastHealthCheckDate());
-        addDateFieldDetailsPanel(infoPanel, "Agreement Date", office.getExecAgreementDate());
+
+        lastHealthCheckDateField = new DatePicker();
+        execAgreementDateField = new DatePicker();
+        addDateFieldDetailsPanel(infoPanel, "Last Health Check Date", lastHealthCheckDateField, office.getLastHealthCheckDate());
+        addDateFieldDetailsPanel(infoPanel, "Agreement Date", execAgreementDateField, office.getExecAgreementDate());
 
         //addJTextDetailsPanel(infoPanel, "Training Status", office.getTrainingStatus(), officeOwnerEmail);
-        addJTextDetailsPanel(infoPanel, "General Notes", new JTextArea(office.getGeneralNotes(), 7, 7));
-        addJTextDetailsPanel(infoPanel, "Leadership Notes", new JTextArea(office.getLeadershipNotes(), 7, 7));
+        addJTextDetailsPanel(infoPanel, "General Notes", generalNotesField);
+        addJTextDetailsPanel(infoPanel, "Leadership Notes", leadershipNotesField);
 
 
 
@@ -170,12 +194,11 @@ public class OfficeInfoPanel extends JPanel implements ActionListener {
         }
     }
 
-    private void addDateFieldDetailsPanel (JPanel infoPanel, String labelText, LocalDate date) {
+    private void addDateFieldDetailsPanel (JPanel infoPanel, String labelText, DatePicker dateField, LocalDate date) {
         JPanel detailsPanel = new JPanel();
         detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
         JLabel label = new JLabel(labelText);
         detailsPanel.add(label);
-        DatePicker dateField = new DatePicker();
         dateField.setDate(date);
         detailsPanel.add(dateField);
         infoPanel.add(detailsPanel);
@@ -200,95 +223,29 @@ public class OfficeInfoPanel extends JPanel implements ActionListener {
         return scrollPane;
     }
 
+    private void updateOfficeData() {
+        office.setOfficeName(officeNameFieldField.getText());
+        office.setOfficeOwner(officeOwnerField.getText());
+        office.setOfficeOwnerEmail(officeOwnerEmailField.getText());
+        office.setOfficePrimaryContactPerson(officePrimaryContactPersonField.getText());
+        office.setOfficePrimaryContactEmail(officePrimaryContactEmailField.getText());
+        //office.setTrainingStatus();
+        office.setLeadershipNotes(leadershipNotesField.getText());
+        office.setGeneralNotes(generalNotesField.getText());
+
+        LocalDate date = execAgreementDateField.getDate();
+        office.setExecAgreementDate(date);
+        //TODO private LocalDate lastHealthCheckDate = null;
+    }
+
 
 
     @Override
     public void actionPerformed(ActionEvent e) {
         System.out.println(e.getActionCommand());
-        /*
-        if ("create".equals(e.getActionCommand())) {
-            String[] options = {"Expense", "Debt", "Cancel"};
-            int n = JOptionPane.showOptionDialog(this.parent,
-                    "Will this be a normal expense, or a new debt?", "Add New",
-                    JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-                    null, options, options[2]);
-            if (n == 0) {
-                //expense
-                ExpenseDialog diag = new ExpenseDialog(this.parent);
-                Expense expense = diag.run();
-
-                //it would be null if the user clicks cancel
-                if (expense == null) {
-                    return;
-                }
-                model.addElement(expense);
-            } else if (n == 1) {
-                //debt
-                DebtDialog diag = new DebtDialog(this.parent);
-                Debt debt = diag.run();
-
-                //it would be null if the user clicks cancel
-                if (debt == null) {
-                    return;
-                }
-                model.addElement(debt);
-
-            }
+        if (e.getActionCommand().equals("save")) {
+            updateOfficeData();
+            Database.getInstance().saveDatabase();
         }
-        if ("edit".equals(e.getActionCommand())) {
-            Expense i = (Expense) expenseList.getSelectedValue();
-            //no value selected
-            if (i == null) {
-                return;
-            }
-
-            //if debt else expense
-            if (i.getBillType() == BillType.DEBT) {
-                DebtDialog diag = new DebtDialog(this.parent, (Debt) i);
-                Debt expense = diag.run();
-                //cancel button selected
-                if (expense == null) {
-                    return;
-                }
-                Database database = Database.getDatabase();
-                model.removeElement(i);
-                database.removeExpense(i);
-                model.addElement(expense);
-            } else {
-                ExpenseDialog diag = new ExpenseDialog(this.parent, i);
-                Expense expense = diag.run();
-                //cancel button selected
-                if (expense == null) {
-                    return;
-                }
-                Database database = Database.getDatabase();
-                model.removeElement(i);
-                database.removeExpense(i);
-                model.addElement(expense);
-            }
-        }
-        if ("delete".equals(e.getActionCommand())) {
-            Expense i = (Expense) expenseList.getSelectedValue();
-            //no value selected
-            if (i == null) {
-                return;
-            }
-            Database database = Database.getDatabase();
-            model.removeElement(i);
-            database.removeExpense(i);
-            if (i.getBillType() == BillType.DEBT) {
-                this.buildDebtPanel();
-                debtPanel.revalidate();
-                debtPanel.repaint();
-            }
-        }
-        Database database = Database.getDatabase();
-        System.out.println(database.getDebtList().size());
-        this.buildDebtPanel();
-        debtPanel.revalidate();
-        debtPanel.repaint();
-        this.buildmanagePanel();
-        managePanel.revalidate();
-        managePanel.repaint();*/
     }
 }

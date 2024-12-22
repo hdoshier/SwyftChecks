@@ -1,9 +1,7 @@
 package healthcheck.data;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.io.*;
+import java.util.*;
 
 public class Database implements Serializable {
     private static Database instance = null;
@@ -11,12 +9,14 @@ public class Database implements Serializable {
     private ArrayList<Office> officeList;
     private ArrayList<HealthCheckPeriod> healthCheckPeriodList;
     private HashSet<String> excludedOffices;
+    private MySettings settings;
 
     private Database(){
         Database.instance = this;
         officeMap = new HashMap<>();
         excludedOffices = new HashSet<>(50);
         officeList = new ArrayList<>();
+        settings = MySettings.getInstance();
     }
 
     public static Database getInstance() {
@@ -43,5 +43,40 @@ public class Database implements Serializable {
         Office office = new Office(officeCode);
         officeMap.put(officeCode, office);
         return office;
+    }
+
+    public void sortOfficeList() {
+        Collections.sort(officeList, Comparator.comparing(Office::getOfficeCode));
+    }
+
+    public void saveDatabase() {
+        try {
+
+            FileOutputStream file = new FileOutputStream("database.ser");
+            ObjectOutputStream out = new ObjectOutputStream(file);
+            out.writeObject(this);
+            file.close();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadDatabase() {
+        try {
+            FileInputStream file = new FileInputStream("database.ser");
+            ObjectInputStream in = new ObjectInputStream(file);
+            Database db = (Database) in.readObject();
+            file.close();
+            in.close();
+            Database.setDatabase(db);
+            //MySettings.loadSettings(db.getSettings());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void setDatabase(Database db) {
+        instance = db;
     }
 }

@@ -12,7 +12,6 @@ public class Office implements Serializable {
     private String officeName = "";
     private LocalDate lastHealthCheckDate = null;
     private LocalDate execAgreementDate = null;
-    private ArrayList<HealthCheck> healthCheckList;
     private String officeOwner = "";
     private String officeOwnerEmail = "";
     private String officePrimaryContactPerson = "";
@@ -20,6 +19,7 @@ public class Office implements Serializable {
     private String leadershipNotes = "";
     private String generalNotes = "";
     private int trainingStatus = 0;
+    private ArrayList<HealthCheck> healthCheckList;
     private HashMap<YearMonth, Double> billableHourHistory;
 
 
@@ -52,12 +52,18 @@ public class Office implements Serializable {
         }
     }
 
-    public HashMap<YearMonth, Double> getBillableHourHistory() {
-        return billableHourHistory;
+    public void addHealthCheck(HealthCheck check) {
+        healthCheckList.add(check);
     }
 
     public void addBillableHourHistory(YearMonth yearMonth, Double hourCount) {
         billableHourHistory.put(yearMonth, hourCount);
+    }
+
+    // getters and setters
+
+    public HashMap<YearMonth, Double> getBillableHourHistory() {
+        return billableHourHistory;
     }
 
     public String getOfficeCode() {
@@ -98,10 +104,6 @@ public class Office implements Serializable {
 
     public ArrayList<HealthCheck> getHealthCheckList() {
         return healthCheckList;
-    }
-
-    public void setHealthCheckList(ArrayList<HealthCheck> healthCheckList) {
-        this.healthCheckList = healthCheckList;
     }
 
     public String getOfficeOwner() {

@@ -14,17 +14,14 @@ public class DataImport {
     public static void importOfficeData(String filePath) {
 
         Database db = Database.getInstance();
-        //HashMap<String, Office> officeMap = db.getOfficeMap();
-        ArrayList<Office> officeList = db.getOfficeList();
 
         try (
                 Scanner importFile = new Scanner(Paths.get(filePath));
         ) {
-            //dont forget excluded set!
-            // 0 Office code | 1 Office Name | 2
-            //0 Office CD | 1 Description~ | 2 Owner Name | 3 Owner Email | 4 Owner Phone | 7 Agreement Exec. Date| 11 Dec 24 | 12 Nov 24 | 13 Oct 24 | 14 Sep 24 | 15 Aug 24 | 16 Jul 24 | 17 Jun 24
+            //TODO dont forget excluded set!
 
 
+            // skips first line of csv
             String line = importFile.nextLine();
 
             // loops through each line in the CSV
@@ -36,10 +33,10 @@ public class DataImport {
                 updateOfficeData(db, splitLine, formatter);
 
             }
+            db.sortOfficeList();
 
         } catch (Exception e) {
             e.printStackTrace();
-            return;
         }
     }
 
@@ -69,6 +66,10 @@ public class DataImport {
             db.getOfficeList().add(office);
         }
 
+        // splitLine index content
+        //0 Office Code | 1 Office Name | 2 Owner Name | 3 Owner Email | 4 Owner Phone | 7 Agreement Exec. Date
+        //11 Dec 24 (current month) | 12 Nov 24 | 13 Oct 24 | 14 Sep 24 | 15 Aug 24 | 16 Jul 24 | 17 Jun 24
+
         //TODO log changes to office data
         office.setOfficeName(splitLine[1].trim());
         office.setOfficeOwner(splitLine[2].trim());
@@ -82,17 +83,15 @@ public class DataImport {
         }
 
         // add billable hour history
-        office.addBillableHourHistory(YearMonth.now(), Double.parseDouble(splitLine[11]));
-        office.addBillableHourHistory(YearMonth.now().minusMonths(1), Double.parseDouble(splitLine[12]));
-        office.addBillableHourHistory(YearMonth.now().minusMonths(2), Double.parseDouble(splitLine[13]));
-        office.addBillableHourHistory(YearMonth.now().minusMonths(3), Double.parseDouble(splitLine[14]));
-        office.addBillableHourHistory(YearMonth.now().minusMonths(4), Double.parseDouble(splitLine[15]));
-        office.addBillableHourHistory(YearMonth.now().minusMonths(5), Double.parseDouble(splitLine[16]));
-        office.addBillableHourHistory(YearMonth.now().minusMonths(6), Double.parseDouble(splitLine[17]));
+        YearMonth month = YearMonth.now();
+        for (int i = 11; i < 18; i++) {
+            office.addBillableHourHistory(month, Double.parseDouble(splitLine[i]));
+            month = month.minusMonths(1);
+        }
 
     }
 
 
-    //create import report. Show offices added and offices excluded
+    //TODO create import report. Show offices added and offices excluded
     //each import should create a unique file
 }

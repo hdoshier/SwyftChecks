@@ -6,6 +6,7 @@ import java.time.LocalDate;
 public class HealthCheck implements Serializable {
 
     private final HealthCheckPeriod healthCheckPeriod;
+    private final Office office;
     private int activeClients = -1;
     private int activeCaregivers = -1;
     private String contactReason = "";
@@ -22,18 +23,26 @@ public class HealthCheck implements Serializable {
     private LocalDate lastPayrollProcessDate = null;
     private boolean repeatAdjustments = false;
     private String generalNotes = "";
-    private int reviewPerformedBy = -1;
-    private int followUpPerformedBy = -1;
-    private double currentMonthBillableHours = -1;
+    private String assignedTo = "";
+    private String reviewPerformedBy = "";
+    private String followUpPerformedBy = "";
     private int healthCheckStatus = 1;
 
-    public HealthCheck(HealthCheckPeriod healthCheckPeriod) {
+    public HealthCheck(HealthCheckPeriod healthCheckPeriod, Office office) {
         this.healthCheckPeriod = healthCheckPeriod;
+        this.office = office;
         //TODO automatomate previousContactReason
     }
 
+
+    // getters and setters
+
     public HealthCheckPeriod getHealthCheckPeriod() {
         return healthCheckPeriod;
+    }
+
+    public Office getOffice() {
+        return office;
     }
 
     public int getHealthCheckStatus() {
@@ -172,27 +181,27 @@ public class HealthCheck implements Serializable {
         this.generalNotes = generalNotes;
     }
 
-    public int getReviewPerformedBy() {
+    public String getReviewPerformedBy() {
         return reviewPerformedBy;
     }
 
-    public void setReviewPerformedBy(int reviewPerformedBy) {
+    public void setReviewPerformedBy(String reviewPerformedBy) {
         this.reviewPerformedBy = reviewPerformedBy;
     }
 
-    public int getFollowUpPerformedBy() {
+    public String getFollowUpPerformedBy() {
         return followUpPerformedBy;
     }
 
-    public void setFollowUpPerformedBy(int followUpPerformedBy) {
+    public void setFollowUpPerformedBy(String followUpPerformedBy) {
         this.followUpPerformedBy = followUpPerformedBy;
     }
 
-    public double getCurrentMonthBillableHours() {
-        return currentMonthBillableHours;
+    public String getAssignedTo() {
+        return assignedTo;
     }
 
-    public void setCurrentMonthBillableHours(double currentMonthBillableHours) {
-        this.currentMonthBillableHours = currentMonthBillableHours;
+    public void setAssignedTo(String assignedTo) {
+        this.assignedTo = assignedTo;
     }
 }

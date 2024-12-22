@@ -125,6 +125,43 @@ public class OfficePanel extends JPanel implements ActionListener {
     }
 
     private void buildListPanel() {
+        JPanel listPanel = new JPanel();
+        listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
+        officePane = new JScrollPane(listPanel);
+
+        ArrayList<Office> allOffices = database.getOfficeList();
+        for (Office i : allOffices) {
+            listPanel.add(createOfficeListItem(i));
+        }
+
+        this.add(officePane, mainGbc);
+    }
+
+    private JPanel createOfficeListItem(Office office) {
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        panel.setBorder(BorderFactory.createLineBorder(Color.black));
+        gbc.gridy = 0;
+
+        // edit button
+        gbc.gridx = 0;
+        JButton btn = new JButton("Edit");
+        btn.addActionListener(this);
+        btn.setActionCommand(office.getOfficeCode());
+        panel.add(btn, gbc);
+
+        // office code
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        panel.add(new JLabel(office.getOfficeCode()), gbc);
+
+        // office name
+        gbc.gridx = 2;
+        panel.add(new JLabel(office.getOfficeName()), gbc);
+        return panel;
+    }
+/*
+    private void buildListPanel() {
         model = new DefaultListModel();
         ArrayList<Office> allOffices = database.getOfficeList();
         for (Office i : allOffices) {
@@ -147,6 +184,8 @@ public class OfficePanel extends JPanel implements ActionListener {
         this.add(officePane, mainGbc);
     }
 
+ */
+
     private void openOfficeInfoPanel(Office selectedOffice) {
         parent.loadPanel(new OfficeInfoPanel(parent, selectedOffice));
     }
@@ -154,6 +193,7 @@ public class OfficePanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         System.out.println(e.getActionCommand());
+        openOfficeInfoPanel(Database.getInstance().getOfficeMap().get(e.getActionCommand()));
         /*
         if ("create".equals(e.getActionCommand())) {
             String[] options = {"Expense", "Debt", "Cancel"};
