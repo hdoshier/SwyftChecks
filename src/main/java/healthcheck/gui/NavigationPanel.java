@@ -1,6 +1,6 @@
 package healthcheck.gui;
 
-import healthcheck.gui.mainpanels.HealthCheckPeriodHostPanel;
+import healthcheck.gui.mainpanels.healthchecks.HealthCheckHostPanel;
 import healthcheck.gui.mainpanels.OfficeListPanel;
 
 import java.awt.*;
@@ -100,7 +100,7 @@ public class NavigationPanel extends JPanel {
             parent.loadPanel(new OfficeListPanel(parent));
         }
         if ("Health Checks".equals(action)) {
-            parent.loadPanel(new HealthCheckPeriodHostPanel(parent));
+            parent.loadPanel(new HealthCheckHostPanel(parent));
         }
         if ("Reports".equals(action)) {
             //parent.loadPanel(new MonthlyPanel(parent));

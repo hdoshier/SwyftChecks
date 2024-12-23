@@ -23,10 +23,11 @@ public class HealthCheck implements Serializable {
     private LocalDate lastPayrollProcessDate = null;
     private boolean repeatAdjustments = false;
     private String generalNotes = "";
-    private String assignedTo = "";
+    private String assignedTo = "Unassigned";
     private String reviewPerformedBy = "";
     private String followUpPerformedBy = "";
-    private int healthCheckStatus = 1;
+    // {"Pending", "Reviewed", "Completed"}
+    private int healthCheckStatus = 0;
 
     public HealthCheck(HealthCheckPeriod healthCheckPeriod, Office office) {
         this.healthCheckPeriod = healthCheckPeriod;

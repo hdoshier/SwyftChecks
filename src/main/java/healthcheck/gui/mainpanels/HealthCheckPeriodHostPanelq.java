@@ -1,9 +1,11 @@
 package healthcheck.gui.mainpanels;
 
 import healthcheck.data.Database;
+import healthcheck.data.HealthCheck;
 import healthcheck.data.HealthCheckPeriod;
 import healthcheck.gui.MainWindow;
 import healthcheck.gui.dialogs.NewHealthCheckPeriodDialog;
+import healthcheck.gui.mainpanels.healthchecks.HealthCheckPanelq;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,12 +14,12 @@ import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-public class HealthCheckPeriodHostPanel extends JPanel implements ActionListener {
+public class HealthCheckPeriodHostPanelq extends JPanel implements ActionListener {
     private MainWindow parent;
     private JTabbedPane tabs;
     private GridBagConstraints mainGbc;
 
-    public HealthCheckPeriodHostPanel(MainWindow parent) {
+    public HealthCheckPeriodHostPanelq(MainWindow parent) {
         this.parent = parent;
         tabs = new JTabbedPane();
         tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -46,8 +48,8 @@ public class HealthCheckPeriodHostPanel extends JPanel implements ActionListener
 
     }
 
-    public HealthCheckPeriodPanel setPeriodPanel(HealthCheckPeriod period) {
-        return new HealthCheckPeriodPanel(this, period);
+    public HealthCheckPeriodPanelq setPeriodPanel(HealthCheckPeriod period) {
+        return new HealthCheckPeriodPanelq(this, period);
     }
 
     private JPanel createManagePanel() {
@@ -68,14 +70,14 @@ public class HealthCheckPeriodHostPanel extends JPanel implements ActionListener
     }
 
     public void addTab(HealthCheckPeriod period) {
-        HealthCheckPeriodPanel panel = new HealthCheckPeriodPanel(this, period);
+        HealthCheckPeriodPanelq panel = new HealthCheckPeriodPanelq(this, period);
         tabs.add(period.toString(), panel);
         Database.getInstance().saveDatabase();
     }
 
     public void addTab(LocalDate start, LocalDate end) {
         HealthCheckPeriod period = Database.getInstance().addNewHealthCheckPeriod(start, end);
-        HealthCheckPeriodPanel panel = new HealthCheckPeriodPanel(this, period);
+        HealthCheckPeriodPanelq panel = new HealthCheckPeriodPanelq(this, period);
         tabs.add(period.toString(), panel);
         Database.getInstance().saveDatabase();
     }
@@ -91,6 +93,10 @@ public class HealthCheckPeriodHostPanel extends JPanel implements ActionListener
         for (int i = list.size() - 1; i >= 0; i--) {
             addTab(list.get(i));
         }
+    }
+
+    public void loadPanel(HealthCheck check) {
+        parent.loadPanel(new HealthCheckPanelq(parent, check));
     }
 
     @Override

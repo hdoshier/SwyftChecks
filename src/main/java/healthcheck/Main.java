@@ -20,9 +20,9 @@ public class Main {
 
         DataImport.importOfficeData(filepath);
         //Database.getInstance().loadDatabase();
-        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now(), LocalDate.now().plusMonths(1));
-        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(2));
         Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().plusMonths(2), LocalDate.now().plusMonths(3));
+        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(2));
+        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now(), LocalDate.now().plusMonths(1));
 
         runGui();
     }

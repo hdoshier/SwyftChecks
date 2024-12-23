@@ -4,19 +4,17 @@ import healthcheck.data.Database;
 import healthcheck.data.HealthCheck;
 import healthcheck.data.HealthCheckPeriod;
 import healthcheck.data.Office;
-import healthcheck.gui.dialogs.NewHealthCheckPeriodDialog;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
-public class HealthCheckPeriodPanel extends JPanel implements ActionListener {
+public class HealthCheckPeriodPanelq extends JPanel implements ActionListener {
     private HealthCheckPeriod period;
-    private HealthCheckPeriodHostPanel parent;
+    private HealthCheckPeriodHostPanelq parent;
 
-    public HealthCheckPeriodPanel(HealthCheckPeriodHostPanel parent, HealthCheckPeriod period) {
+    public HealthCheckPeriodPanelq(HealthCheckPeriodHostPanelq parent, HealthCheckPeriod period) {
         this.period = period;
         this.parent = parent;
         this.setLayout(new GridBagLayout());
@@ -94,6 +92,10 @@ public class HealthCheckPeriodPanel extends JPanel implements ActionListener {
         return managePanel;
     }
 
+    private void openHealthCheckPanel(HealthCheck check) {
+        parent.loadPanel(check);
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         String actionCommand = e.getActionCommand();
@@ -101,6 +103,9 @@ public class HealthCheckPeriodPanel extends JPanel implements ActionListener {
         if (actionCommand.equals("addNew")) {
         } else if (actionCommand.equals("globalSet")) {
 
+        } else {
+            Office office = Database.getInstance().getOfficeMap().get(e.getActionCommand());
+            openHealthCheckPanel(period.getHealthCheckByOffice(office));
         }
 
         this.revalidate();

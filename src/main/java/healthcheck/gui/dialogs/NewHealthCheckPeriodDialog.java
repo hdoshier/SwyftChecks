@@ -1,10 +1,8 @@
 package healthcheck.gui.dialogs;
 
 import com.github.lgooddatepicker.components.DatePicker;
-import healthcheck.data.Database;
 import healthcheck.data.HealthCheckPeriod;
-import healthcheck.gui.mainpanels.HealthCheckPeriodHostPanel;
-import healthcheck.gui.mainpanels.HealthCheckPeriodPanel;
+import healthcheck.gui.mainpanels.HealthCheckPeriodHostPanelq;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,9 +14,9 @@ public class NewHealthCheckPeriodDialog extends JDialog implements ActionListene
     private DatePicker startdate;
     private DatePicker enddate;
     private HealthCheckPeriod period = null;
-    private HealthCheckPeriodHostPanel hostPanel;
+    private HealthCheckPeriodHostPanelq hostPanel;
 
-    public NewHealthCheckPeriodDialog(JFrame parent, HealthCheckPeriodHostPanel hostPanel) {
+    public NewHealthCheckPeriodDialog(JFrame parent, HealthCheckPeriodHostPanelq hostPanel) {
         super(parent, "Add New", null);
         this.hostPanel = hostPanel;
         this.setSize(450, 300);
