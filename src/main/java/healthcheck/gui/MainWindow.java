@@ -1,6 +1,6 @@
 package healthcheck.gui;
 
-import healthcheck.gui.mainpanels.OfficePanel;
+import healthcheck.gui.mainpanels.OfficeListPanel;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -31,7 +31,7 @@ public class MainWindow extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(new GridBagLayout());
         this.mainPanel = null;
-        this.loadPanel(new OfficePanel(this));
+        this.loadPanel(new OfficeListPanel(this));
         this.loadNavPanel();
     }
 

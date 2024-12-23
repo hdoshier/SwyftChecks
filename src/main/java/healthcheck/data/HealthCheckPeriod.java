@@ -66,4 +66,9 @@ public class HealthCheckPeriod implements Serializable {
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
+
+    @Override
+    public String toString() {
+        return startDate.toString();
+    }
 }

@@ -1,6 +1,7 @@
 package healthcheck.data;
 
 import java.io.*;
+import java.time.LocalDate;
 import java.util.*;
 
 public class Database implements Serializable {
@@ -17,6 +18,7 @@ public class Database implements Serializable {
         excludedOffices = new HashSet<>(50);
         officeList = new ArrayList<>();
         settings = MySettings.getInstance();
+        healthCheckPeriodList = new ArrayList<>();
     }
 
     public static Database getInstance() {
@@ -24,6 +26,12 @@ public class Database implements Serializable {
             new Database();
         }
         return Database.instance;
+    }
+
+    public HealthCheckPeriod addNewHealthCheckPeriod(LocalDate startDate, LocalDate endDate) {
+        HealthCheckPeriod period = new HealthCheckPeriod(startDate, endDate);
+        healthCheckPeriodList.addFirst(period);
+        return period;
     }
 
     public ArrayList<Office> getOfficeList() {return officeList;}
@@ -34,6 +42,10 @@ public class Database implements Serializable {
 
     public HashSet<String> getExcludedOffices() {
         return excludedOffices;
+    }
+
+    public ArrayList<HealthCheckPeriod> getHealthCheckPeriodList() {
+        return healthCheckPeriodList;
     }
 
     public Office createOffice(String officeCode) {

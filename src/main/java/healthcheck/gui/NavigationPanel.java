@@ -1,10 +1,9 @@
 package healthcheck.gui;
 
-import healthcheck.gui.mainpanels.OfficePanel;
+import healthcheck.gui.mainpanels.HealthCheckPeriodHostPanel;
+import healthcheck.gui.mainpanels.OfficeListPanel;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
@@ -98,10 +97,10 @@ public class NavigationPanel extends JPanel {
             //parent.loadPanel(new MonthlyPanel(parent));
         }
         if ("Offices".equals(action)) {
-            parent.loadPanel(new OfficePanel(parent));
+            parent.loadPanel(new OfficeListPanel(parent));
         }
         if ("Health Checks".equals(action)) {
-            //parent.loadPanel(new MonthlyPanel(parent));
+            parent.loadPanel(new HealthCheckPeriodHostPanel(parent));
         }
         if ("Reports".equals(action)) {
             //parent.loadPanel(new MonthlyPanel(parent));

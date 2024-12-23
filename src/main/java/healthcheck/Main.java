@@ -1,12 +1,14 @@
 package healthcheck;
 
 import healthcheck.data.DataImport;
+import healthcheck.data.Database;
 import healthcheck.gui.MainWindow;
 
 import javax.swing.*;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.awt.Desktop;
+import java.time.LocalDate;
 
 public class Main {
 
@@ -17,6 +19,10 @@ public class Main {
         String filepath = "src/main/csvdata/Offices.csv";
 
         DataImport.importOfficeData(filepath);
+        //Database.getInstance().loadDatabase();
+        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now(), LocalDate.now().plusMonths(1));
+        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(2));
+        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().plusMonths(2), LocalDate.now().plusMonths(3));
 
         runGui();
     }
