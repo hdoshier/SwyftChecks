@@ -21,6 +21,7 @@ public class HealthCheckHostPanel extends JPanel {
         this.setPreferredSize(new Dimension(850, 600));
         this.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
 
         // create periodsPanel
         gbc.weightx = 1.0;
@@ -34,16 +35,14 @@ public class HealthCheckHostPanel extends JPanel {
     }
 
     private JPanel createPeriodsPanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        JButton addNewPeriodBtn = new JButton("+");
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton addNewPeriodBtn = new JButton("+Add New");
         //addNewPeriodBtn.addActionListener(this);
         addNewPeriodBtn.setActionCommand("addNew");
-        panel.add(addNewPeriodBtn, gbc);
+        panel.add(addNewPeriodBtn);
 
-        gbc.gridx = 1;
-        gbc.weightx = 1;
-        panel.add(createPeriodListPane(), gbc);
+
+        panel.add(createPeriodListPane());
         return panel;
     }
 
