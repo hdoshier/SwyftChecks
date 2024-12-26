@@ -1,17 +1,26 @@
 package healthcheck.data;
 
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.WriteResult;
+import com.google.cloud.firestore.annotation.DocumentId;
+import healthcheck.Main;
+import org.threeten.bp.DateTimeUtils;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
-public class Office implements Serializable {
+public class Office {
 
-    private final String officeCode;
+    private String officeCode;
     private String officeName = "";
-    private LocalDate lastHealthCheckDate = null;
-    private LocalDate execAgreementDate = null;
+    private String lastHealthCheckDate = null;
+    private String execAgreementDate = null;
     private String officeOwner = "";
     private String officeOwnerEmail = "";
     private String officePrimaryContactPerson = "";
@@ -19,14 +28,10 @@ public class Office implements Serializable {
     private String leadershipNotes = "";
     private String generalNotes = "";
     private int trainingStatus = 0;
-    private ArrayList<HealthCheck> healthCheckList;
-    private HashMap<YearMonth, Double> billableHourHistory;
-
-
+    private HashMap<String, Double> billableHourHistory;
 
     public Office(String officeCode){
         this.officeCode = officeCode;
-        this.healthCheckList = new ArrayList<>(1);
         billableHourHistory = new HashMap<>(4);
     }
 
@@ -45,66 +50,82 @@ public class Office implements Serializable {
 
         YearMonth month = YearMonth.now();
         while (true) {
-            if (billableHourHistory.containsKey(month)) {
+            if (billableHourHistory.containsKey(month.toString())) {
                 return month;
             }
             month = month.minusMonths(1);
         }
     }
 
-    public void addHealthCheck(HealthCheck check) {
-        healthCheckList.add(check);
-    }
-
     public void addBillableHourHistory(YearMonth yearMonth, Double hourCount) {
-        billableHourHistory.put(yearMonth, hourCount);
+        billableHourHistory.put(yearMonth.toString(), hourCount);
     }
 
     // getters and setters
 
-    public HashMap<YearMonth, Double> getBillableHourHistory() {
-        return billableHourHistory;
-    }
 
     public String getOfficeCode() {
         return officeCode;
+    }
+
+    public void setOfficeCode(String officeCode) {
+        this.officeCode = officeCode;
     }
 
     public String getOfficeName() {
         return officeName;
     }
 
-    public LocalDate getExecAgreementDate() {
-        return execAgreementDate;
-    }
-
-    public void setExecAgreementDate(LocalDate execAgreementDate) {
-        this.execAgreementDate = execAgreementDate;
-    }
-
-    public String getGeneralNotes() {
-        return generalNotes;
-    }
-
-    public void setGeneralNotes(String generalNotes) {
-        this.generalNotes = generalNotes;
-    }
-
     public void setOfficeName(String officeName) {
         this.officeName = officeName;
     }
 
-    public LocalDate getLastHealthCheckDate() {
+    public String getLastHealthCheckDate() {
         return lastHealthCheckDate;
     }
 
-    public void setLastHealthCheckDate(LocalDate lastHealthCheckDate) {
+    public void setLastHealthCheckDate(String lastHealthCheckDate) {
         this.lastHealthCheckDate = lastHealthCheckDate;
     }
 
-    public ArrayList<HealthCheck> getHealthCheckList() {
-        return healthCheckList;
+    public String getExecAgreementDate() {
+        return execAgreementDate;
     }
+
+    public void setExecAgreementDate(String execAgreementDate) {
+        this.execAgreementDate = execAgreementDate;
+    }
+
+    // LocalDate getters and setters
+    public LocalDate getLastHealthCheckLocalDate() {
+        if (lastHealthCheckDate == null) {
+            return null;
+        }
+        return LocalDate.parse(lastHealthCheckDate);
+
+    }
+
+    public void setLastHealthCheckDate(LocalDate lastHealthCheckDate) {
+        if (lastHealthCheckDate != null) {
+            this.lastHealthCheckDate = lastHealthCheckDate.toString();
+        }
+    }
+
+    public LocalDate getExecAgreementLocalDate() {
+        if (execAgreementDate == null) {
+            return null;
+        }
+        return LocalDate.parse(execAgreementDate);
+
+    }
+
+    public void setExecAgreementDate(LocalDate execAgreementDate) {
+        if (execAgreementDate != null) {
+            this.execAgreementDate = execAgreementDate.toString();
+        }
+    }
+
+    //end local date getters and setters
 
     public String getOfficeOwner() {
         return officeOwner;
@@ -142,8 +163,16 @@ public class Office implements Serializable {
         return leadershipNotes;
     }
 
-    public void setLeadershipNotes(String leaderhsipNotes) {
-        this.leadershipNotes = leaderhsipNotes;
+    public void setLeadershipNotes(String leadershipNotes) {
+        this.leadershipNotes = leadershipNotes;
+    }
+
+    public String getGeneralNotes() {
+        return generalNotes;
+    }
+
+    public void setGeneralNotes(String generalNotes) {
+        this.generalNotes = generalNotes;
     }
 
     public int getTrainingStatus() {
@@ -152,6 +181,26 @@ public class Office implements Serializable {
 
     public void setTrainingStatus(int trainingStatus) {
         this.trainingStatus = trainingStatus;
+    }
+
+    public HashMap<String, Double> getBillableHourHistory() {
+        return billableHourHistory;
+    }
+
+    public void setBillableHourHistory(HashMap<String, Double> billableHourHistory) {
+        this.billableHourHistory = billableHourHistory;
+    }
+
+    public boolean equals(Object value) {
+        if (value == null) {
+            return false;
+        }
+
+        if (value instanceof Office office) {
+            return this.officeCode.equals(office.getOfficeCode());
+        } else {
+            return false;
+        }
     }
 
     @Override

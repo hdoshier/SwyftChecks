@@ -13,6 +13,7 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     implementation files('lib/LGoodDatePicker-11.2.1.jar')
+    implementation 'com.google.firebase:firebase-admin:9.1.1'
 }
 
 test {

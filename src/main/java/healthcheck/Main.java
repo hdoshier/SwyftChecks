@@ -1,37 +1,50 @@
 package healthcheck;
 
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.*;
 import healthcheck.data.DataImport;
-import healthcheck.data.Database;
 import healthcheck.gui.MainWindow;
 
 import javax.swing.*;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.awt.Desktop;
-import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        System.out.println("SwyftChecks Started!");
 
         System.out.println("Hello");
 
         String filepath = "src/main/csvdata/Offices.csv";
 
-        DataImport.importOfficeData(filepath);
+        //DataImport.importOfficeData(filepath);
         //Database.getInstance().loadDatabase();
-        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().plusMonths(2), LocalDate.now().plusMonths(3));
-        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(2));
-        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now(), LocalDate.now().plusMonths(1));
-        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now(), LocalDate.now().plusMonths(1));
-        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now(), LocalDate.now().plusMonths(1));
-        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now(), LocalDate.now().plusMonths(1));
-        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now(), LocalDate.now().plusMonths(1));
-        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now(), LocalDate.now().plusMonths(1));
-
+        //Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().plusMonths(2), LocalDate.now().plusMonths(3));
+        //Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(2));
+        //Database.getInstance().addNewHealthCheckPeriod(LocalDate.now(), LocalDate.now().plusMonths(1));
 
         runGui();
+
+
+
+
+        //Office office = new Office("abc 123");
+        //office.setOfficeName("Hunters heros");
+        //office.addBillableHourHistory(YearMonth.now(), 1.23);
+        //WriteData.writeOffice(office);
+        //WriteData.writeOfficeObject(office);
+        //Office office1 = new Office("abe");
+
+        //System.out.println(FirestoreDatabase.containsExcludedOffice("CFC TX ART"));
+
     }
+
+
 
     public String mainTest(){
         return "test";

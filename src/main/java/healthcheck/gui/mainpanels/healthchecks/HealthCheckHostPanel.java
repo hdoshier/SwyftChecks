@@ -1,15 +1,12 @@
 package healthcheck.gui.mainpanels.healthchecks;
 
-import healthcheck.data.Database;
 import healthcheck.data.HealthCheckPeriod;
 import healthcheck.gui.MainWindow;
-import healthcheck.gui.mainpanels.HealthCheckPeriodPanelq;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class HealthCheckHostPanel extends JPanel {
@@ -54,9 +51,8 @@ public class HealthCheckHostPanel extends JPanel {
     }
 
     private void addExistingPeriods() {
-        Database db = Database.getInstance();
 
-        ArrayList<HealthCheckPeriod> list = db.getHealthCheckPeriodList();
+        /*ArrayList<HealthCheckPeriod> list = db.getHealthCheckPeriodList();
         if (list.isEmpty()) {
             return;
         }
@@ -77,6 +73,8 @@ public class HealthCheckHostPanel extends JPanel {
             });
             periodListPanel.add(label);
         }
+
+         */
     }
     /*
     private HealthCheckPeriod createNewPeriod(LocalDate start, LocalDate end) {

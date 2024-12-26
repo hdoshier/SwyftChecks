@@ -1,7 +1,7 @@
 package healthcheck.gui.mainpanels;
 
-import healthcheck.data.Database;
 import healthcheck.data.Office;
+import healthcheck.data.firestore.WriteData;
 import healthcheck.gui.MainWindow;
 
 import javax.swing.*;
@@ -168,8 +168,8 @@ public class OfficePanel extends JPanel implements ActionListener {
 
         lastHealthCheckDateField = new DatePicker();
         execAgreementDateField = new DatePicker();
-        addDateFieldDetailsPanel(infoPanel, "Last Health Check Date", lastHealthCheckDateField, office.getLastHealthCheckDate());
-        addDateFieldDetailsPanel(infoPanel, "Agreement Date", execAgreementDateField, office.getExecAgreementDate());
+        addDateFieldDetailsPanel(infoPanel, "Last Health Check Date", lastHealthCheckDateField, office.getLastHealthCheckLocalDate());
+        addDateFieldDetailsPanel(infoPanel, "Agreement Date", execAgreementDateField, office.getExecAgreementLocalDate());
 
         //addJTextDetailsPanel(infoPanel, "Training Status", office.getTrainingStatus(), officeOwnerEmail);
         addJTextDetailsPanel(infoPanel, "General Notes", generalNotesField);
@@ -208,9 +208,12 @@ public class OfficePanel extends JPanel implements ActionListener {
         JPanel scrollPanel = new JPanel();
         JScrollPane scrollPane = new JScrollPane(scrollPanel);
         scrollPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+
         YearMonth month = office.getMostRecentBillableHistory();
-        HashMap<YearMonth, Double> billableMap = office.getBillableHourHistory();
-        while (billableMap.containsKey(month)) {
+        HashMap<String, Double> billableMap = office.getBillableHourHistory();
+
+
+        while (billableMap.containsKey(month.toString())) {
             JPanel detailsPanel = new JPanel();
             detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
             JLabel monthYear = new JLabel(month.toString());
@@ -245,7 +248,7 @@ public class OfficePanel extends JPanel implements ActionListener {
         System.out.println(e.getActionCommand());
         if (e.getActionCommand().equals("save")) {
             updateOfficeData();
-            Database.getInstance().saveDatabase();
+            WriteData.writeOffice(office);
         }
     }
 }

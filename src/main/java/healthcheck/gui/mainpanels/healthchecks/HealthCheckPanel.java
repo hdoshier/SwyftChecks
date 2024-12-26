@@ -11,7 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-public class HealthCheckPanelq extends JPanel implements ActionListener {
+public class HealthCheckPanel extends JPanel implements ActionListener {
     private MainWindow parent;
     private HealthCheck check;
 
@@ -19,7 +19,7 @@ public class HealthCheckPanelq extends JPanel implements ActionListener {
 
 
 
-    public HealthCheckPanelq(MainWindow parent, HealthCheck check) {
+    public HealthCheckPanel(MainWindow parent, HealthCheck check) {
         this.parent = parent;
         this.check = check;
         this.setPreferredSize(new Dimension(850, 600));

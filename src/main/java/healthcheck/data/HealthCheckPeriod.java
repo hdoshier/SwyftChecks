@@ -12,7 +12,7 @@ public class HealthCheckPeriod implements Serializable {
     public HealthCheckPeriod(LocalDate startDate, LocalDate endDate) {
         this.startDate = startDate;
         this.endDate = endDate;
-        this.addHealthChecks();
+        //this.addHealthChecks();
     }
 
     public HealthCheck getHealthCheckByOffice(Office office) {
@@ -23,17 +23,16 @@ public class HealthCheckPeriod implements Serializable {
         }
         return null;
     }
-
+/*
     private void addHealthChecks() {
         ArrayList<Office> officeList = Database.getInstance().getOfficeList();
         healthCheckList = new ArrayList<>(officeList.size());
         for (Office office : officeList) {
             HealthCheck check = new HealthCheck(this, office);
             healthCheckList.add(check);
-            office.addHealthCheck(check);
         }
     }
-
+*/
     public ArrayList<HealthCheck> getListByAssignedTo (String assignedTo) {
         ArrayList<HealthCheck> filteredList = new ArrayList<>();
         for (HealthCheck check : healthCheckList) {

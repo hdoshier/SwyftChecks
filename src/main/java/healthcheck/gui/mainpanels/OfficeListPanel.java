@@ -1,7 +1,8 @@
 package healthcheck.gui.mainpanels;
 
-import healthcheck.data.Database;
 import healthcheck.data.Office;
+import healthcheck.data.firestore.FirestoreDatabase;
+import healthcheck.data.firestore.ReadData;
 import healthcheck.gui.MainWindow;
 
 import java.awt.*;
@@ -27,7 +28,6 @@ public class OfficeListPanel extends JPanel implements ActionListener {
     JScrollPane officePane;
     JList<Office> officeList;
     DefaultListModel model;
-    Database database;
 
     /**
      *Constructs the panel.
@@ -36,7 +36,6 @@ public class OfficeListPanel extends JPanel implements ActionListener {
      *
      */
     public OfficeListPanel(MainWindow parent) {
-        this.database = Database.getInstance();
         this.parent = parent;
         this.setPreferredSize(new Dimension(850, 600));
         this.setLayout(new GridBagLayout());
@@ -129,7 +128,7 @@ public class OfficeListPanel extends JPanel implements ActionListener {
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
         officePane = new JScrollPane(listPanel);
 
-        ArrayList<Office> allOffices = database.getOfficeList();
+        ArrayList<Office> allOffices = FirestoreDatabase.getAllOfficesList();
         for (Office i : allOffices) {
             listPanel.add(createOfficeListItem(i));
         }
@@ -160,31 +159,6 @@ public class OfficeListPanel extends JPanel implements ActionListener {
         panel.add(new JLabel(office.getOfficeName()), gbc);
         return panel;
     }
-/*
-    private void buildListPanel() {
-        model = new DefaultListModel();
-        ArrayList<Office> allOffices = database.getOfficeList();
-        for (Office i : allOffices) {
-            model.addElement(i);
-        }
-        officeList = new JList(model);
-        officeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        officeList.addListSelectionListener(e -> {
-            // Ensure the event is not triggered during list updates
-            if (!e.getValueIsAdjusting()) {
-                Office selectedOffice = officeList.getSelectedValue();
-                if (selectedOffice != null) {
-                    openOfficeInfoPanel(selectedOffice);
-                }
-            }
-        });
-
-        officePane = new JScrollPane(officeList);
-
-        this.add(officePane, mainGbc);
-    }
-
- */
 
     private void openOfficeInfoPanel(Office selectedOffice) {
         parent.loadPanel(new OfficePanel(parent, selectedOffice));
@@ -193,7 +167,7 @@ public class OfficeListPanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         System.out.println(e.getActionCommand());
-        openOfficeInfoPanel(Database.getInstance().getOfficeMap().get(e.getActionCommand()));
+        openOfficeInfoPanel(ReadData.readOffice(e.getActionCommand()));
         /*
         if ("create".equals(e.getActionCommand())) {
             String[] options = {"Expense", "Debt", "Cancel"};
