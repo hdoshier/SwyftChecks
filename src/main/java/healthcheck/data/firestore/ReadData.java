@@ -4,10 +4,52 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import healthcheck.data.Office;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class ReadData {
+
+    public static ArrayList<Office> getOfficeList(Firestore firestore) {
+        // get collection from db
+        ApiFuture<QuerySnapshot> query = firestore.collection("offices").get();
+
+        try {
+            QuerySnapshot querySnapshot = query.get();
+            ArrayList<Office> list = new ArrayList<>(querySnapshot.size());
+            for (QueryDocumentSnapshot document : querySnapshot) {
+                list.add(ReadData.readOffice(document));
+            }
+            return list;
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>(1);
+        }
+    }
+
+    public static HashSet<String> getExcludedOfficeSet(Firestore firestore) {
+
+        try {
+            // Get the document reference
+            DocumentReference documentRef = firestore.collection("settings").document("excludedOffices");
+
+            // Fetch the document snapshot
+            ApiFuture<DocumentSnapshot> future = documentRef.get();
+            DocumentSnapshot document = future.get();
+
+            Object dbList = document.get("offices");
+
+            @SuppressWarnings("unchecked")
+            ArrayList<String> list = (ArrayList<String>) dbList;
+            return new HashSet<>(list);
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        return new HashSet<>();
+    }
+
 
     public static Office readOffice(QueryDocumentSnapshot document) {
         return officeDataToRead(document.getId(), document);
@@ -15,7 +57,7 @@ public class ReadData {
 
 
     public static Office readOffice(String officeCode) {
-        Firestore db = FirestoreDatabase.getFirestore();
+        Firestore db = Database.getFirestore();
         DocumentReference document = db.collection("offices").document(officeCode);
 
         try {

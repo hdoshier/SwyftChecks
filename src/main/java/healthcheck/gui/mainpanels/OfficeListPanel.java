@@ -1,7 +1,7 @@
 package healthcheck.gui.mainpanels;
 
 import healthcheck.data.Office;
-import healthcheck.data.firestore.FirestoreDatabase;
+import healthcheck.data.firestore.Database;
 import healthcheck.data.firestore.ReadData;
 import healthcheck.gui.MainWindow;
 
@@ -128,7 +128,7 @@ public class OfficeListPanel extends JPanel implements ActionListener {
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
         officePane = new JScrollPane(listPanel);
 
-        ArrayList<Office> allOffices = FirestoreDatabase.getAllOfficesList();
+        ArrayList<Office> allOffices = Database.getInstance().getAllOfficesList();
         for (Office i : allOffices) {
             listPanel.add(createOfficeListItem(i));
         }

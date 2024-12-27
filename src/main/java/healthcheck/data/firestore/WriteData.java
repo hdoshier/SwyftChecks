@@ -1,20 +1,10 @@
 package healthcheck.data.firestore;
 
-import com.google.api.core.ApiFuture;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.WriteResult;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
-import com.google.firebase.cloud.FirestoreClient;
-import healthcheck.Main;
 import healthcheck.data.Office;
 
-import java.io.FileInputStream;
-import java.util.HashMap;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 
 public class WriteData {
 
@@ -36,25 +26,27 @@ public class WriteData {
         data.put("billableHourHistory", office.getBillableHourHistory());
 
         // pushes the data to the database
-        Firestore db = FirestoreDatabase.getFirestore();
+        Firestore db = Database.getFirestore();
         db.collection("offices").document(office.getOfficeCode()).set(data);
     }
 
     public static void writeOfficeObject (Office office) {
-        Firestore db = FirestoreDatabase.getFirestore();
+        Firestore db = Database.getFirestore();
         db.collection("offices").document(office.getOfficeCode()).set(office);
     }
 
-    public static void writeExcludedOffice (String[] officeData) {
-        Firestore db = FirestoreDatabase.getFirestore();
+    public static void writeExcludedOffice (HashSet<String> set) {
+        Firestore db = Database.getFirestore();
         //0 Office Code | 1 Office Name | 2 Owner Name | 3 Owner Email | 4 Owner Phone | 7 Agreement Exec. Date
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("officeCode", officeData[0]);
-        data.put("officeName", officeData[1]);
-        data.put("ownerName", officeData[2]);
-        data.put("ownerEmail", officeData[3]);
-        data.put("ownerPhone", officeData[4]);
-        db.collection("excludedOffices").document(officeData[0]).set(data);
+
+        try {
+            HashMap<String, List> map = new HashMap<>(1);
+            map.put("offices", new ArrayList<String>(set));
+            db.collection("settings").document("excludedOffices").set(map).get();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
 
     }
 }

@@ -1,6 +1,6 @@
 package healthcheck.data;
 
-import healthcheck.data.firestore.FirestoreDatabase;
+import healthcheck.data.firestore.Database;
 import healthcheck.data.firestore.ReadData;
 import healthcheck.data.firestore.WriteData;
 
@@ -9,8 +9,6 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Scanner;
 
 public class DataImport {
@@ -53,21 +51,20 @@ public class DataImport {
 
 
         //check if it's an excluded office
-        if (FirestoreDatabase.isExcludedOffice(officeCode)) {
+        if (Database.getInstance().isExcludedOffice(officeCode)) {
             return;
         }
 
         // TODO create a settings hashset of excluded office values
         //TODO create an explicit excluded office list in settings - ex. ABS KS WCT
         if (officeCode.contains("CFC") || officeCode.contains("AYS ")) {
-            WriteData.writeExcludedOffice(splitLine);
             return;
         }
 
         Office office;
         // if database already contains office, only add billable history
         // else create a new office
-        if (FirestoreDatabase.containsOffice(officeCode)) {
+        if (Database.getInstance().containsOffice(officeCode)) {
             office = ReadData.readOffice(officeCode);
             addBillableHourHistoryToOffice(office, splitLine);
             WriteData.writeOffice(office);
