@@ -2,12 +2,8 @@ package healthcheck.gui;
 
 import healthcheck.gui.mainpanels.OfficeListPanel;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import java.awt.*;
+import javax.swing.*;
 
 /**
  *The PrimaryPanel gui class.
@@ -21,6 +17,7 @@ import javax.swing.JPanel;
 public class MainWindow extends JFrame {
     private JPanel mainPanel;
     private NavigationPanel nav;
+    private GridBagConstraints gbc;
 
     /**
      *Constructs the window.
@@ -31,8 +28,18 @@ public class MainWindow extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(new GridBagLayout());
         this.mainPanel = null;
-        this.loadPanel(new OfficeListPanel(this));
+        gbc = new GridBagConstraints();
+
+        gbc.weighty = 1.0;
+        gbc.weightx = 0.15;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(10, 10, 10, 10);
         this.loadNavPanel();
+
+        gbc.weightx = 0.85;
+        gbc.gridx = 1;
+        this.loadPanel(new OfficeListPanel(this));
+
     }
 
     /**
@@ -46,14 +53,8 @@ public class MainWindow extends JFrame {
             this.remove(this.mainPanel);
         }
         this.mainPanel = panel;
-        GridBagConstraints mainPanelgbc = new GridBagConstraints();
-        mainPanelgbc.gridx = 1;
-        mainPanelgbc.gridy = 0;
-        mainPanelgbc.weightx = 1.0;
-        mainPanelgbc.weighty = 1.0;
-        mainPanelgbc.fill = GridBagConstraints.BOTH;
-        mainPanelgbc.insets = new Insets(10, 10, 10, 10);
-        this.add(this.mainPanel, mainPanelgbc);
+        mainPanel.setPreferredSize(new Dimension(850, 600));
+        this.add(this.mainPanel, gbc);
         this.pack();
         this.repaint();
     }
@@ -66,14 +67,8 @@ public class MainWindow extends JFrame {
             this.remove(this.nav);
         }
         this.nav = new NavigationPanel(this);
-        GridBagConstraints navGbc = new GridBagConstraints();
-        navGbc.gridx = 0;
-        navGbc.gridy = 0;
-        navGbc.weightx = 0.1;
-        navGbc.weighty = 1.0;
-        navGbc.fill = GridBagConstraints.BOTH;
-        navGbc.insets = new Insets(10, 10, 10, 10);
-        this.add(this.nav, navGbc);
+        nav.setPreferredSize(new Dimension(250, 600));
+        this.add(this.nav, gbc);
         this.pack();
         this.repaint();
     }

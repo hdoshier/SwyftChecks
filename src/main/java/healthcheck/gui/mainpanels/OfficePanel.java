@@ -168,8 +168,8 @@ public class OfficePanel extends JPanel implements ActionListener {
 
         lastHealthCheckDateField = new DatePicker();
         execAgreementDateField = new DatePicker();
-        addDateFieldDetailsPanel(infoPanel, "Last Health Check Date", lastHealthCheckDateField, office.getLastHealthCheckLocalDate());
-        addDateFieldDetailsPanel(infoPanel, "Agreement Date", execAgreementDateField, office.getExecAgreementLocalDate());
+        addDateFieldDetailsPanel(infoPanel, "Last Health Check Date", lastHealthCheckDateField, office.getLastHealthCheckDate());
+        addDateFieldDetailsPanel(infoPanel, "Agreement Date", execAgreementDateField, office.getExecAgreementDate());
 
         //addJTextDetailsPanel(infoPanel, "Training Status", office.getTrainingStatus(), officeOwnerEmail);
         addJTextDetailsPanel(infoPanel, "General Notes", generalNotesField);
@@ -216,9 +216,10 @@ public class OfficePanel extends JPanel implements ActionListener {
         while (billableMap.containsKey(month.toString())) {
             JPanel detailsPanel = new JPanel();
             detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
+            detailsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
             JLabel monthYear = new JLabel(month.toString());
             detailsPanel.add(monthYear);
-            JLabel billableHours = new JLabel(String.valueOf(billableMap.get(month)));
+            JLabel billableHours = new JLabel(String.valueOf(billableMap.get(month.toString())));
             detailsPanel.add(billableHours);
             scrollPanel.add(detailsPanel);
             month = month.minusMonths(1);

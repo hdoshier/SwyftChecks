@@ -37,7 +37,6 @@ public class OfficeListPanel extends JPanel implements ActionListener {
      */
     public OfficeListPanel(MainWindow parent) {
         this.parent = parent;
-        this.setPreferredSize(new Dimension(850, 600));
         this.setLayout(new GridBagLayout());
 
         mainGbc = new GridBagConstraints();
@@ -168,90 +167,5 @@ public class OfficeListPanel extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         System.out.println(e.getActionCommand());
         openOfficeInfoPanel(ReadData.readOffice(e.getActionCommand()));
-        /*
-        if ("create".equals(e.getActionCommand())) {
-            String[] options = {"Expense", "Debt", "Cancel"};
-            int n = JOptionPane.showOptionDialog(this.parent,
-                    "Will this be a normal expense, or a new debt?", "Add New",
-                    JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-                    null, options, options[2]);
-            if (n == 0) {
-                //expense
-                ExpenseDialog diag = new ExpenseDialog(this.parent);
-                Expense expense = diag.run();
-
-                //it would be null if the user clicks cancel
-                if (expense == null) {
-                    return;
-                }
-                model.addElement(expense);
-            } else if (n == 1) {
-                //debt
-                DebtDialog diag = new DebtDialog(this.parent);
-                Debt debt = diag.run();
-
-                //it would be null if the user clicks cancel
-                if (debt == null) {
-                    return;
-                }
-                model.addElement(debt);
-
-            }
-        }
-        if ("edit".equals(e.getActionCommand())) {
-            Expense i = (Expense) expenseList.getSelectedValue();
-            //no value selected
-            if (i == null) {
-                return;
-            }
-
-            //if debt else expense
-            if (i.getBillType() == BillType.DEBT) {
-                DebtDialog diag = new DebtDialog(this.parent, (Debt) i);
-                Debt expense = diag.run();
-                //cancel button selected
-                if (expense == null) {
-                    return;
-                }
-                Database database = Database.getDatabase();
-                model.removeElement(i);
-                database.removeExpense(i);
-                model.addElement(expense);
-            } else {
-                ExpenseDialog diag = new ExpenseDialog(this.parent, i);
-                Expense expense = diag.run();
-                //cancel button selected
-                if (expense == null) {
-                    return;
-                }
-                Database database = Database.getDatabase();
-                model.removeElement(i);
-                database.removeExpense(i);
-                model.addElement(expense);
-            }
-        }
-        if ("delete".equals(e.getActionCommand())) {
-            Expense i = (Expense) expenseList.getSelectedValue();
-            //no value selected
-            if (i == null) {
-                return;
-            }
-            Database database = Database.getDatabase();
-            model.removeElement(i);
-            database.removeExpense(i);
-            if (i.getBillType() == BillType.DEBT) {
-                this.buildDebtPanel();
-                debtPanel.revalidate();
-                debtPanel.repaint();
-            }
-        }
-        Database database = Database.getDatabase();
-        System.out.println(database.getDebtList().size());
-        this.buildDebtPanel();
-        debtPanel.revalidate();
-        debtPanel.repaint();
-        this.buildmanagePanel();
-        managePanel.revalidate();
-        managePanel.repaint();*/
     }
 }

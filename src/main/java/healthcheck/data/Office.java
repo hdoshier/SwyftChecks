@@ -19,8 +19,8 @@ public class Office {
 
     private String officeCode;
     private String officeName = "";
-    private String lastHealthCheckDate = null;
-    private String execAgreementDate = null;
+    private LocalDate lastHealthCheckDate = null;
+    private LocalDate execAgreementDate = null;
     private String officeOwner = "";
     private String officeOwnerEmail = "";
     private String officePrimaryContactPerson = "";
@@ -80,52 +80,33 @@ public class Office {
         this.officeName = officeName;
     }
 
-    public String getLastHealthCheckDate() {
+    public LocalDate getLastHealthCheckDate() {
         return lastHealthCheckDate;
     }
 
-    public void setLastHealthCheckDate(String lastHealthCheckDate) {
+    public void setLastHealthCheckDate(LocalDate lastHealthCheckDate) {
         this.lastHealthCheckDate = lastHealthCheckDate;
     }
 
-    public String getExecAgreementDate() {
+    public void setLastHealthCheckDate(String lastHealthCheckDate) {
+        if (lastHealthCheckDate != null) {
+            this.lastHealthCheckDate = LocalDate.parse(lastHealthCheckDate);
+        }
+    }
+
+    public LocalDate getExecAgreementDate() {
         return execAgreementDate;
     }
 
-    public void setExecAgreementDate(String execAgreementDate) {
+    public void setExecAgreementDate(LocalDate execAgreementDate) {
         this.execAgreementDate = execAgreementDate;
     }
 
-    // LocalDate getters and setters
-    public LocalDate getLastHealthCheckLocalDate() {
-        if (lastHealthCheckDate == null) {
-            return null;
-        }
-        return LocalDate.parse(lastHealthCheckDate);
-
-    }
-
-    public void setLastHealthCheckDate(LocalDate lastHealthCheckDate) {
-        if (lastHealthCheckDate != null) {
-            this.lastHealthCheckDate = lastHealthCheckDate.toString();
-        }
-    }
-
-    public LocalDate getExecAgreementLocalDate() {
-        if (execAgreementDate == null) {
-            return null;
-        }
-        return LocalDate.parse(execAgreementDate);
-
-    }
-
-    public void setExecAgreementDate(LocalDate execAgreementDate) {
+    public void setExecAgreementDate(String execAgreementDate) {
         if (execAgreementDate != null) {
-            this.execAgreementDate = execAgreementDate.toString();
+            this.execAgreementDate = LocalDate.parse(execAgreementDate);
         }
     }
-
-    //end local date getters and setters
 
     public String getOfficeOwner() {
         return officeOwner;

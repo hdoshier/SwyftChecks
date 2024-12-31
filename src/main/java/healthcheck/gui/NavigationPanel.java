@@ -19,7 +19,8 @@ import javax.swing.*;
  */
 public class NavigationPanel extends JPanel {
     private MainWindow parent;
-    JPanel activePanel;
+    private JPanel activePanel;
+    private JLabel activeLabel;
 
     /**
      *Constructs the panel.
@@ -29,7 +30,6 @@ public class NavigationPanel extends JPanel {
      */
     public NavigationPanel(MainWindow parent) {
         this.parent = parent;
-        this.setPreferredSize(new Dimension(250, 600));
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.setBorder(BorderFactory.createLineBorder(Color.black));
         this.setBackground(new Color(0, 122, 178));
@@ -59,6 +59,10 @@ public class NavigationPanel extends JPanel {
         navItem.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 10)); // Padding
         navItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
+        if (isActive) {
+            activeLabel = navItem; // Set the initial active label
+        }
+
         // Add hover effect
         navItem.addMouseListener(new MouseAdapter() {
             @Override
@@ -74,11 +78,11 @@ public class NavigationPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // Change the active item
-                if (activePanel != null) {
-                    activePanel.setBackground(new Color(0, 122, 178)); // Reset previous active
+                if (activeLabel != null) {
+                    activeLabel.setBackground(new Color(0, 122, 178)); // Reset previous active label
                 }
-                activePanel = panel; // Update active item
-                navItem.setBackground(new Color(255, 151, 25)); // Highlight active item
+                activeLabel = navItem; // Update the active label
+                navItem.setBackground(new Color(255, 151, 25)); // Highlight new active label
 
                 // Perform action (switch view, print message, etc.)
                 System.out.println(name + " clicked");

@@ -5,8 +5,7 @@ import java.time.LocalDate;
 
 public class HealthCheck implements Serializable {
 
-    private final HealthCheckPeriod healthCheckPeriod;
-    private final Office office;
+    private Office office;
     private int activeClients = -1;
     private int activeCaregivers = -1;
     private String contactReason = "";
@@ -29,8 +28,7 @@ public class HealthCheck implements Serializable {
     // {"Pending", "Reviewed", "Completed"}
     private int healthCheckStatus = 0;
 
-    public HealthCheck(HealthCheckPeriod healthCheckPeriod, Office office) {
-        this.healthCheckPeriod = healthCheckPeriod;
+    public HealthCheck( Office office) {
         this.office = office;
         //TODO automatomate previousContactReason
     }
@@ -38,8 +36,9 @@ public class HealthCheck implements Serializable {
 
     // getters and setters
 
-    public HealthCheckPeriod getHealthCheckPeriod() {
-        return healthCheckPeriod;
+
+    public void setOffice(Office office) {
+        this.office = office;
     }
 
     public Office getOffice() {

@@ -1,9 +1,8 @@
 package healthcheck.data;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
-public class MySettings implements Serializable {
+public class MySettings {
     private static MySettings instance;
     private ArrayList<String> users;
     private ArrayList<String> emailTemplates;

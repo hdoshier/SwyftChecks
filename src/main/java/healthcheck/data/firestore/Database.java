@@ -6,9 +6,11 @@ import com.google.cloud.firestore.*;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
+import healthcheck.data.HealthCheckPeriod;
 import healthcheck.data.Office;
 
 import java.io.FileInputStream;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -17,12 +19,14 @@ public class Database {
     private Firestore firestore;
     private ArrayList<Office> officeList;
     private HashSet<String> excludedOffices;
+    private ArrayList<HealthCheckPeriod> healthCheckPeriodList;
 
     private Database() {
         instance = this;
         firestore = initializeFirebase();
         officeList = ReadData.getOfficeList(firestore);
         excludedOffices = ReadData.getExcludedOfficeSet(firestore);
+        healthCheckPeriodList = new ArrayList<>();
     }
 
     public static Database getInstance() {
@@ -30,18 +34,6 @@ public class Database {
             instance = new Database();
         }
         return instance;
-    }
-
-    public static Firestore getFirestore() {
-        return instance.firestore;
-    }
-
-    public HashSet<String> getExcludedOffices() {
-        return excludedOffices;
-    }
-
-    public ArrayList<Office> getAllOfficesList(){
-        return officeList;
     }
 
     /**
@@ -77,6 +69,36 @@ public class Database {
             }
         }
         return false;
+    }
+
+    public HealthCheckPeriod addNewHealthCheckPeriod(LocalDate start, LocalDate end) {
+        HealthCheckPeriod period = new HealthCheckPeriod(start, end);
+        healthCheckPeriodList.add(period);
+        return period;
+    }
+
+
+    // getters and setters
+
+
+    public ArrayList<HealthCheckPeriod> getHealthCheckPeriodList() {
+        return healthCheckPeriodList;
+    }
+
+    public void setHealthCheckPeriodList(ArrayList<HealthCheckPeriod> healthCheckPeriodList) {
+        this.healthCheckPeriodList = healthCheckPeriodList;
+    }
+
+    public static Firestore getFirestore() {
+        return instance.firestore;
+    }
+
+    public HashSet<String> getExcludedOffices() {
+        return excludedOffices;
+    }
+
+    public ArrayList<Office> getAllOfficesList(){
+        return officeList;
     }
 
     public Firestore initializeFirebase() {

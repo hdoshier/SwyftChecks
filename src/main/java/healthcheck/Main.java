@@ -1,5 +1,7 @@
 package healthcheck;
 
+import healthcheck.data.DataImport;
+import healthcheck.data.Office;
 import healthcheck.data.firestore.Database;
 import healthcheck.data.firestore.ReadData;
 import healthcheck.data.firestore.WriteData;
@@ -9,6 +11,7 @@ import javax.swing.*;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.awt.Desktop;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
 
@@ -18,15 +21,16 @@ public class Main {
         System.out.println("SwyftChecks Started!");
 
         // sets the data for the instance.
-        Database.getInstance();
+        Database db = Database.getInstance();
 
         String filepath = "src/main/csvdata/Offices.csv";
         //DataImport.importOfficeData(filepath);
-        /*
-        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().plusMonths(2), LocalDate.now().plusMonths(3));
-        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(2));
-        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now(), LocalDate.now().plusMonths(1));
-        */
+
+        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().minusMonths(3), LocalDate.now().minusMonths(2));
+        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().minusMonths(2), LocalDate.now().minusMonths(1));
+        //current period
+        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1));
+
         runGui();
     }
 

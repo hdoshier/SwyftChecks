@@ -56,7 +56,7 @@ public class NewHealthCheckPeriodDialog extends JDialog implements ActionListene
     public void actionPerformed(ActionEvent e) {
         String actionCommand = e.getActionCommand();
         if (actionCommand.equals("save")) {
-            //hostPanel.addTab(startdate.getDate(), enddate.getDate());
+            hostPanel.createNewPeriod(startdate.getDate(), enddate.getDate());
         }
         this.dispose();
     }

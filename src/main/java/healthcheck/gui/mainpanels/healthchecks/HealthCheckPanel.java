@@ -15,14 +15,9 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
     private MainWindow parent;
     private HealthCheck check;
 
-
-
-
-
     public HealthCheckPanel(MainWindow parent, HealthCheck check) {
         this.parent = parent;
         this.check = check;
-        this.setPreferredSize(new Dimension(850, 600));
         this.setLayout(new GridBagLayout());
 
         GridBagConstraints mainGbc = new GridBagConstraints();

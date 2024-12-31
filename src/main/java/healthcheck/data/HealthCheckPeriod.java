@@ -1,5 +1,7 @@
 package healthcheck.data;
 
+import healthcheck.data.firestore.Database;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -12,27 +14,31 @@ public class HealthCheckPeriod implements Serializable {
     public HealthCheckPeriod(LocalDate startDate, LocalDate endDate) {
         this.startDate = startDate;
         this.endDate = endDate;
-        //this.addHealthChecks();
+        this.addHealthChecks();
     }
 
     public HealthCheck getHealthCheckByOffice(Office office) {
+        return getHealthCheckByOffice(office.getOfficeCode());
+    }
+    public HealthCheck getHealthCheckByOffice(String officeCode) {
+        //TODO retrieve from database
         for (HealthCheck check : healthCheckList) {
-            if (check.getOffice() == office) {
+            if (check.getOffice().getOfficeCode().equals(officeCode)) {
                 return check;
             }
         }
         return null;
     }
-/*
+
     private void addHealthChecks() {
-        ArrayList<Office> officeList = Database.getInstance().getOfficeList();
+        ArrayList<Office> officeList = Database.getInstance().getAllOfficesList();
         healthCheckList = new ArrayList<>(officeList.size());
         for (Office office : officeList) {
-            HealthCheck check = new HealthCheck(this, office);
+            HealthCheck check = new HealthCheck(office);
             healthCheckList.add(check);
         }
     }
-*/
+
     public ArrayList<HealthCheck> getListByAssignedTo (String assignedTo) {
         ArrayList<HealthCheck> filteredList = new ArrayList<>();
         for (HealthCheck check : healthCheckList) {
@@ -55,6 +61,14 @@ public class HealthCheckPeriod implements Serializable {
 
 
     // getters and setters
+    public String getIdentifier() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(startDate.toString());
+        sb.append(" - ");
+        sb.append(endDate.toString());
+        return sb.toString();
+    }
+
     public ArrayList<HealthCheck> getHealthCheckList() {
         return healthCheckList;
     }
