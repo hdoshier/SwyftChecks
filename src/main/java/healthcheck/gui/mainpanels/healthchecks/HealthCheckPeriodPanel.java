@@ -41,7 +41,7 @@ public class HealthCheckPeriodPanel extends JPanel {
         setContentPanel(new HealthCheckPeriodDetailsPanel(parent, period));
     }
 
-    private void setContentPanel(JPanel panel) {
+    public void setContentPanel(JPanel panel) {
         if (contentPanel != null) {
             this.remove(contentPanel);
         }
@@ -58,7 +58,7 @@ public class HealthCheckPeriodPanel extends JPanel {
         panel.setBackground(new Color(0, 122, 178));
         gbc.weightx = 1.0;
 
-        detailsLabel = new JLabel("Details");
+        detailsLabel = new JLabel("Period Details");
         formatLabel(detailsLabel, true);
         detailsLabelActive = true;
         detailsLabel.addMouseListener(new MouseAdapter() {
@@ -129,7 +129,7 @@ public class HealthCheckPeriodPanel extends JPanel {
             detailsLabelActive = false;
             detailsLabel.setBackground(new Color(0, 122, 178));
             healthCheckLabel.setBackground(new Color(255, 151, 25));
-            setContentPanel(new HealthCheckPeriodListPanel(parent, period));
+            setContentPanel(new HealthCheckPeriodListPanel(this, period));
         }
         if(view.equals("Details")) {
             System.out.println(view);

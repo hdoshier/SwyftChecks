@@ -4,6 +4,7 @@ import healthcheck.data.firestore.Database;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class HealthCheckPeriod implements Serializable {
@@ -57,6 +58,16 @@ public class HealthCheckPeriod implements Serializable {
             }
         }
         return filteredList;
+    }
+
+    public String getPeriodDateRange() {
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
+        StringBuilder sb = new StringBuilder();
+        sb.append(startDate.format(formatter));
+        sb.append(" - ");
+        sb.append(endDate.format(formatter));
+        return sb.toString();
     }
 
 

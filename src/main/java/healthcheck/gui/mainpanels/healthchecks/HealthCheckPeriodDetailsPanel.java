@@ -15,5 +15,11 @@ public class HealthCheckPeriodDetailsPanel extends JPanel {
         this.period = period;
         this.setLayout(new FlowLayout(FlowLayout.LEFT));
         this.add(new JLabel("Details Panel" + period.toString()));
+
+        // number of pending health checks
+        // number of reviewed health checks
+        // number of completed health checks
+        // completed percentage
+        // days left in health check period
     }
 }

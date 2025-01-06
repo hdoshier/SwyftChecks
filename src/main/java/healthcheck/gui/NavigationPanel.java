@@ -2,6 +2,7 @@ package healthcheck.gui;
 
 import healthcheck.gui.mainpanels.healthchecks.HealthCheckHostPanel;
 import healthcheck.gui.mainpanels.OfficeListPanel;
+import healthcheck.gui.mainpanels.settings.SettingsHostPanel;
 
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -19,7 +20,6 @@ import javax.swing.*;
  */
 public class NavigationPanel extends JPanel {
     private MainWindow parent;
-    private JPanel activePanel;
     private JLabel activeLabel;
 
     /**
@@ -50,17 +50,17 @@ public class NavigationPanel extends JPanel {
 
     }
 
-    private void addNavItem(JPanel panel, String name, boolean isActive){
+    private void addNavItem(JPanel panel, String name, boolean isActive) {
         JLabel navItem = new JLabel(name);
         navItem.setOpaque(true);
-        navItem.setBackground(isActive ? new Color(255, 151, 25) : new Color(0, 122, 178)); // Highlight active
+        navItem.setBackground(isActive ? new Color(255, 151, 25) : new Color(0, 122, 178));
         navItem.setForeground(Color.WHITE);
         navItem.setFont(new Font("Arial", Font.PLAIN, 16));
-        navItem.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 10)); // Padding
+        navItem.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 10));
         navItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
         if (isActive) {
-            activeLabel = navItem; // Set the initial active label
+            activeLabel = navItem;
         }
 
         // Add hover effect
@@ -72,21 +72,18 @@ public class NavigationPanel extends JPanel {
 
             @Override
             public void mouseExited(MouseEvent e) {
-                if (!isActive) navItem.setBackground(new Color(0, 122, 178));
+                if (activeLabel != navItem) navItem.setBackground(new Color(0, 122, 178));
             }
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                // Change the active item
-                if (activeLabel != null) {
-                    activeLabel.setBackground(new Color(0, 122, 178)); // Reset previous active label
+                if (activeLabel != navItem) {
+                    activeLabel.setBackground(new Color(0, 122, 178));
+                    activeLabel = navItem;
+                    activeLabel.setBackground(new Color(255, 151, 25));
+                    System.out.println(name + " clicked");
+                    actionPerformed(name);
                 }
-                activeLabel = navItem; // Update the active label
-                navItem.setBackground(new Color(255, 151, 25)); // Highlight new active label
-
-                // Perform action (switch view, print message, etc.)
-                System.out.println(name + " clicked");
-                actionPerformed(name);
             }
         });
 
@@ -110,7 +107,7 @@ public class NavigationPanel extends JPanel {
             //parent.loadPanel(new MonthlyPanel(parent));
         }
         if ("Settings".equals(action)) {
-            //parent.loadPanel(new MonthlyPanel(parent));
+            parent.loadPanel(new SettingsHostPanel(parent));
         }
     }
 }

@@ -32,7 +32,7 @@ public class WriteData {
         data.put("generalNotes", check.getGeneralNotes());
         data.put("assignedTo", check.getAssignedTo());
         data.put("reviewPerformedBy", check.getReviewPerformedBy());
-        data.put("followUpPerformedBy", check.getFollowUpPerformedBy());
+        data.put("followUpPerformedBy", check.getHealthCheckCompletedBy());
         data.put("healthCheckStatus", check.getHealthCheckStatus());
 
 

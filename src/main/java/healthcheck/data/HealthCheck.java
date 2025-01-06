@@ -6,27 +6,28 @@ import java.time.LocalDate;
 public class HealthCheck implements Serializable {
 
     private Office office;
-    private int activeClients = -1;
-    private int activeCaregivers = -1;
+    private int activeClients = 0;
+    private int activeCaregivers = 0;
     private String contactReason = "";
     private String previousContactReason = "";
     private LocalDate lastLogin = null;
     private LocalDate oldestTaskDate = null;
-    private int expiredLicenseCount = -1;
+    private int expiredLicenseCount = 0;
     private LocalDate lastScheduleDate = null;
-    private int scheduleGenerationMethod = -1;
+    private int scheduleGenerationMethod = 0;
     private boolean shiftsInDifferentStatuses = false;
     private boolean caregiversUsingTheApp = false;
-    private int clientGeneralSchedulesConfigured = -1;
+    private int clientGeneralSchedulesConfigured = 0;
     private LocalDate lastBillingProcessDate = null;
     private LocalDate lastPayrollProcessDate = null;
     private boolean repeatAdjustments = false;
     private String generalNotes = "";
     private String assignedTo = "Unassigned";
     private String reviewPerformedBy = "";
-    private String followUpPerformedBy = "";
-    // {"Pending", "Reviewed", "Completed"}
+    private String healthCheckCompletedBy = "";
+    // {"Unassigned", "Pending", "Reviewed", "Completed"}
     private int healthCheckStatus = 0;
+    private boolean flagedForLeadershipReview = false;
 
     public HealthCheck( Office office) {
         this.office = office;
@@ -36,6 +37,14 @@ public class HealthCheck implements Serializable {
 
     // getters and setters
 
+
+    public boolean isFlagedForLeadershipReview() {
+        return flagedForLeadershipReview;
+    }
+
+    public void setFlagedForLeadershipReview(boolean flagedForLeadershipReview) {
+        this.flagedForLeadershipReview = flagedForLeadershipReview;
+    }
 
     public void setOffice(Office office) {
         this.office = office;
@@ -189,12 +198,12 @@ public class HealthCheck implements Serializable {
         this.reviewPerformedBy = reviewPerformedBy;
     }
 
-    public String getFollowUpPerformedBy() {
-        return followUpPerformedBy;
+    public String getHealthCheckCompletedBy() {
+        return healthCheckCompletedBy;
     }
 
-    public void setFollowUpPerformedBy(String followUpPerformedBy) {
-        this.followUpPerformedBy = followUpPerformedBy;
+    public void setHealthCheckCompletedBy(String healthCheckCompletedBy) {
+        this.healthCheckCompletedBy = healthCheckCompletedBy;
     }
 
     public String getAssignedTo() {

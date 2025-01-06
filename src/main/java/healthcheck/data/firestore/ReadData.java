@@ -12,7 +12,8 @@ import java.util.concurrent.ExecutionException;
 
 public class ReadData {
 
-    public static ArrayList<Office> getOfficeList(Firestore firestore) {
+    public static ArrayList<Office> getOfficeList() {
+        Firestore firestore = Database.getFirestore();
         // get collection from db
         ApiFuture<QuerySnapshot> query = firestore.collection("offices").get();
 
@@ -29,25 +30,52 @@ public class ReadData {
         }
     }
 
-    public static HashSet<String> getExcludedOfficeSet(Firestore firestore) {
-
+    public static DocumentSnapshot getSettingsDocument() {
+        Firestore firestore = Database.getFirestore();
         try {
             // Get the document reference
-            DocumentReference documentRef = firestore.collection("settings").document("excludedOffices");
+            DocumentReference documentRef = firestore.collection("settings").document("MySettings");
 
             // Fetch the document snapshot
             ApiFuture<DocumentSnapshot> future = documentRef.get();
-            DocumentSnapshot document = future.get();
-
-            Object dbList = document.get("offices");
-
-            @SuppressWarnings("unchecked")
-            ArrayList<String> list = (ArrayList<String>) dbList;
-            return new HashSet<>(list);
-        } catch (InterruptedException | ExecutionException e) {
+            return future.get();
+        }  catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
-        return new HashSet<>();
+        return null;
+    }
+
+    public static HashSet<String> getExcludedOfficeSet(DocumentSnapshot document) {
+        Object dbList = document.get("excludedOffices");
+
+        @SuppressWarnings("unchecked")
+        ArrayList<String> list = (ArrayList<String>) dbList;
+        if (list == null) {
+            return new HashSet<>();
+        }
+        return new HashSet<>(list);
+    }
+
+    public static ArrayList<String> getUsers(DocumentSnapshot document) {
+        Object dbList = document.get("users");
+
+        @SuppressWarnings("unchecked")
+        ArrayList<String> list = (ArrayList<String>) dbList;
+        if (list == null) {
+            return new ArrayList<>();
+        }
+        return list;
+    }
+
+    public static HashMap<String, String> getEmailTemplates(DocumentSnapshot document) {
+        Object dbMap = document.get("emailTemplates");
+
+        @SuppressWarnings("unchecked")
+        HashMap<String, String> map = (HashMap<String, String>) dbMap;
+        if (map == null) {
+            return new HashMap<String, String>();
+        }
+        return map;
     }
 
 

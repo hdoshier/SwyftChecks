@@ -15,10 +15,10 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 public class HealthCheckPeriodListPanel extends JPanel implements ActionListener {
-    private MainWindow parent;
+    private HealthCheckPeriodPanel parent;
     private HealthCheckPeriod period;
 
-    public HealthCheckPeriodListPanel(MainWindow parent, HealthCheckPeriod period) {
+    public HealthCheckPeriodListPanel(HealthCheckPeriodPanel parent, HealthCheckPeriod period) {
         this.parent = parent;
         this.period = period;
         this.setLayout(new GridBagLayout());
@@ -138,7 +138,11 @@ public class HealthCheckPeriodListPanel extends JPanel implements ActionListener
     }
 
     private void openHealthCheckPanel(HealthCheck check) {
-        parent.loadPanel(new HealthCheckPanel(parent, check));
+        parent.setContentPanel(new HealthCheckPanel(this, check));
+    }
+
+    public void openOfficePanel(Office office) {
+        parent.setContentPanel(new OfficePanel(parent, office));
     }
 
     @Override

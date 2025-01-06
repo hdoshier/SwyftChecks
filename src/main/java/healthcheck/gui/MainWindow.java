@@ -23,7 +23,11 @@ public class MainWindow extends JFrame {
      *Constructs the window.
      */
     public MainWindow() {
-        this.setPreferredSize(new Dimension(1100, 600));
+        //this.setPreferredSize(new Dimension(1100, 600));
+        Toolkit tk = Toolkit.getDefaultToolkit();
+        int xSize = ((int) tk.getScreenSize().getWidth());
+        int ySize = ((int) tk.getScreenSize().getHeight());
+        this.setPreferredSize(new Dimension(xSize, ySize-50));
         this.setTitle("SwyftChecks");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(new GridBagLayout());
@@ -53,7 +57,7 @@ public class MainWindow extends JFrame {
             this.remove(this.mainPanel);
         }
         this.mainPanel = panel;
-        mainPanel.setPreferredSize(new Dimension(850, 600));
+        //mainPanel.setPreferredSize(new Dimension(850, 600));
         this.add(this.mainPanel, gbc);
         this.pack();
         this.repaint();
@@ -67,7 +71,7 @@ public class MainWindow extends JFrame {
             this.remove(this.nav);
         }
         this.nav = new NavigationPanel(this);
-        nav.setPreferredSize(new Dimension(250, 600));
+        //nav.setPreferredSize(new Dimension(250, 600));
         this.add(this.nav, gbc);
         this.pack();
         this.repaint();

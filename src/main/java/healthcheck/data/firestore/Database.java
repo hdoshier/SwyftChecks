@@ -7,6 +7,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 import healthcheck.data.HealthCheckPeriod;
+import healthcheck.data.MySettings;
 import healthcheck.data.Office;
 
 import java.io.FileInputStream;
@@ -20,13 +21,14 @@ public class Database {
     private ArrayList<Office> officeList;
     private HashSet<String> excludedOffices;
     private ArrayList<HealthCheckPeriod> healthCheckPeriodList;
+    private MySettings settings;
 
     private Database() {
         instance = this;
         firestore = initializeFirebase();
-        officeList = ReadData.getOfficeList(firestore);
-        excludedOffices = ReadData.getExcludedOfficeSet(firestore);
+        officeList = ReadData.getOfficeList();
         healthCheckPeriodList = new ArrayList<>();
+        settings = MySettings.getInstance();
     }
 
     public static Database getInstance() {
@@ -73,7 +75,7 @@ public class Database {
 
     public HealthCheckPeriod addNewHealthCheckPeriod(LocalDate start, LocalDate end) {
         HealthCheckPeriod period = new HealthCheckPeriod(start, end);
-        healthCheckPeriodList.add(period);
+        healthCheckPeriodList.addFirst(period);
         return period;
     }
 
@@ -117,5 +119,9 @@ public class Database {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void clearDatabase() {
+        instance = null;
     }
 }

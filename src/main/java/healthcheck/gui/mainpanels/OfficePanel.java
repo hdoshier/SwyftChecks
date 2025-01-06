@@ -29,6 +29,7 @@ import com.github.lgooddatepicker.components.DatePicker;
 public class OfficePanel extends JPanel implements ActionListener {
     MainWindow parent;
     Office office;
+    JPanel hostPanel;
 
     private JTextField officeNameFieldField;
     private DatePicker lastHealthCheckDateField;
@@ -48,11 +49,18 @@ public class OfficePanel extends JPanel implements ActionListener {
      *
      */
     public OfficePanel(MainWindow parent, Office office) {
-        this.office = office;
-
         this.parent = parent;
+        buildOfficePanel(office);
+    }
+
+    public OfficePanel(JPanel parent, Office office) {
+        this.hostPanel = parent;
+        buildOfficePanel(office);
+    }
+
+    private void buildOfficePanel(Office office) {
+        this.office = office;
         this.setLayout(new GridBagLayout());
-        this.setPreferredSize(new Dimension(850, 600));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.weightx = 1.0;
@@ -72,7 +80,6 @@ public class OfficePanel extends JPanel implements ActionListener {
         gbc.gridy = 2;
         gbc.weighty = 0.09;
         this.add(buildBillableHoursPanel(), gbc);
-
     }
 
 

@@ -17,12 +17,10 @@ import java.util.ArrayList;
 public class HealthCheckHostPanel extends JPanel implements ActionListener {
     private MainWindow parent;
     private Database db;
-    private JPanel periodListPanel;
     private HealthCheckPeriodPanel periodPanel = null;
     private GridBagConstraints gbc;
-    private HealthCheckPeriod activePeriod;
-    private JLabel activePeriodLabel = null;
     private JPanel periodManagePanel;
+    private JComboBox<String> periodBox;
 
     public HealthCheckHostPanel (MainWindow parent) {
         db = Database.getInstance();
@@ -38,9 +36,9 @@ public class HealthCheckHostPanel extends JPanel implements ActionListener {
         //create period view panel
         gbc.weighty = 1.0;
         gbc.gridy = 1;
-        activePeriod =
-                db.getHealthCheckPeriodList().isEmpty() ? null : db.getHealthCheckPeriodList().getLast();
-        setPeriodContentPanel(activePeriod);
+        HealthCheckPeriod period =
+                db.getHealthCheckPeriodList().isEmpty() ? null : db.getHealthCheckPeriodList().getFirst();
+        setPeriodContentPanel(period);
 
     }
 
@@ -62,70 +60,36 @@ public class HealthCheckHostPanel extends JPanel implements ActionListener {
         addNewPeriodBtn.setActionCommand("addNew");
         periodManagePanel.add(addNewPeriodBtn);
 
-        periodManagePanel.add(createPeriodListPane());
+        periodManagePanel.add(populateSpinner());
+
         return periodManagePanel;
     }
 
-    private JScrollPane createPeriodListPane() {
-        periodListPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        periodListPanel.setBackground(new Color(0, 122, 178));
+    private JComboBox<String> populateSpinner() {
+        periodBox = new JComboBox<>();
 
-        //adds existing periods to the list.
-        ArrayList<HealthCheckPeriod> list = db.getHealthCheckPeriodList();
-        if (!list.isEmpty()) {
-            for (HealthCheckPeriod i : list) {
-                addPeriodToPeriodListPanel(i);
-            }
+        for (HealthCheckPeriod i : db.getHealthCheckPeriodList()) {
+            periodBox.addItem(i.getPeriodDateRange());
         }
-        return new JScrollPane(periodListPanel);
-    }
 
-    private void addPeriodToPeriodListPanel(HealthCheckPeriod period) {
-        JLabel label = new JLabel(period.toString());
-        label.setOpaque(true);
-        label.setForeground(Color.WHITE);
-        label.setFont(new Font("Arial", Font.PLAIN, 16));
-        label.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 10)); // Padding
-        label.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
-
-        label.setBackground(new Color(255, 151, 25));
-
-
-        label.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                label.setBackground(new Color(255, 151, 25));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (label != activePeriodLabel) {
-                    label.setBackground(new Color(0, 122, 178));
-                }
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                activePeriodLabel.setBackground(new Color(0, 122, 178));
-                label.setBackground(new Color(255, 151, 25)); // Highlight active item
-                activePeriodLabel = label;
-                // Perform action (switch view, print message, etc.)
-                System.out.println(period.toString() + " clicked");
-
-                setPeriodContentPanel(period);
-            }
+        // Add action listener to handle selection changes
+        periodBox.addActionListener(e -> {
+            int selectedIndex = periodBox.getSelectedIndex();
+            setPeriodContentPanel(db.getHealthCheckPeriodList().get(selectedIndex));
         });
-        if (activePeriodLabel != null) {
-            activePeriodLabel.setBackground(new Color(0, 122, 178));
-        }
-        activePeriodLabel = label;
-        periodListPanel.add(label, 0);
+        return periodBox;
     }
 
     public void createNewPeriod(LocalDate start, LocalDate end) {
         HealthCheckPeriod period = db.addNewHealthCheckPeriod(start, end);
-        addPeriodToPeriodListPanel(period);
         setPeriodContentPanel(period);
+
+        DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>) periodBox.getModel();
+        model.insertElementAt(period.getPeriodDateRange(), 0);
+
+        //set the dropdown to show the first index as selected
+        periodBox.setSelectedIndex(0);
+
         periodPanel.revalidate();
         periodPanel.repaint();
         periodManagePanel.revalidate();
