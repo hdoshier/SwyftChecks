@@ -1,4 +1,4 @@
-package healthcheck.gui.mainpanels;
+package healthcheck.gui.mainpanels.offices;
 
 import healthcheck.data.Office;
 import healthcheck.data.firestore.Database;

@@ -2,6 +2,7 @@ package healthcheck;
 
 import healthcheck.data.DataImport;
 import healthcheck.data.Office;
+import healthcheck.data.customlists.OfficeList;
 import healthcheck.data.firestore.Database;
 import healthcheck.data.firestore.ReadData;
 import healthcheck.data.firestore.WriteData;
@@ -19,7 +20,7 @@ public class Main {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         System.out.println("SwyftChecks Started!");
-
+/*
         // sets the data for the instance.
         Database db = Database.getInstance();
 
@@ -32,6 +33,18 @@ public class Main {
         Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1));
 
         runGui();
+
+ */
+
+        OfficeList list = new OfficeList();
+        list.add(new Office("1"));
+        list.add(new Office("2"));
+        list.add(new Office("3"));
+        list.add(new Office("4"));
+
+        for (Office i : list) {
+            System.out.println(i.getOfficeCode());
+        }
     }
 
     public static void runGui() {

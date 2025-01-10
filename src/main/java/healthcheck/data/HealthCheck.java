@@ -28,6 +28,7 @@ public class HealthCheck implements Serializable {
     // {"Unassigned", "Pending", "Reviewed", "Completed"}
     private int healthCheckStatus = 0;
     private boolean flagedForLeadershipReview = false;
+    private String emailTemplateSent;
 
     public HealthCheck( Office office) {
         this.office = office;
@@ -37,6 +38,14 @@ public class HealthCheck implements Serializable {
 
     // getters and setters
 
+
+    public String getEmailTemplateSent() {
+        return emailTemplateSent;
+    }
+
+    public void setEmailTemplateSent(String emailTemplateSent) {
+        this.emailTemplateSent = emailTemplateSent;
+    }
 
     public boolean isFlagedForLeadershipReview() {
         return flagedForLeadershipReview;

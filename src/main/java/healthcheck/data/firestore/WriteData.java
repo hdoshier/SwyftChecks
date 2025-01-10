@@ -4,6 +4,7 @@ import com.google.cloud.firestore.Firestore;
 import healthcheck.data.HealthCheck;
 import healthcheck.data.Office;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -45,8 +46,16 @@ public class WriteData {
         //all office data to be written
         data.put("officeCode", office.getOfficeCode());
         data.put("officeName", office.getOfficeName());
-        data.put("lastHealthCheckDate", office.getLastHealthCheckDate().toString());
-        data.put("execAgreementDate", office.getExecAgreementDate().toString());
+        LocalDate date = office.getLastHealthCheckDate();
+        if (date != null) {
+            data.put("lastHealthCheckDate", date.toString());
+        }
+
+        date = office.getExecAgreementDate();
+        if (date != null) {
+            data.put("execAgreementDate", date.toString());
+        }
+
         data.put("officeOwner", office.getOfficeOwner());
         data.put("officeOwnerEmail", office.getOfficeOwnerEmail());
         data.put("officePrimaryContactPerson", office.getOfficePrimaryContactPerson());

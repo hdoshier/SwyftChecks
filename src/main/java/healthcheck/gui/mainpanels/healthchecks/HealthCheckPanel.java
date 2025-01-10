@@ -14,7 +14,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static com.sun.java.accessibility.util.AWTEventMonitor.addActionListener;
 
@@ -26,6 +30,23 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
     private JTextField contactName;
     private HealthCheckPeriodListPanel parent;
     private JLabel healthCheckStatusLabel = null;
+    private JComboBox<String> emailTemplateBox;
+
+
+    private JSpinner activeClientsField;
+    private JSpinner activeCaregiversField;
+    private JSpinner expiredLicenseCountField;
+    private DatePicker lastPayrollProcessDateField;
+    private JSpinner clientGeneralSchedulesConfiguredField;
+    private DatePicker lastLoginField;
+    private DatePicker oldestTaskDateField;
+    private DatePicker lastScheduleDateField;
+    private DatePicker lastBillingProcessDateField;
+    private JCheckBox shiftsInDifferentStatusesCheckBox;
+    private JCheckBox caregiversUsingTheAppCheckBox;
+    private JCheckBox repeatAdjustmentsCheckBox;
+    private JTextArea generalNotesArea;
+    private JTextArea contactReasonField;
 
     public HealthCheckPanel(HealthCheckPeriodListPanel parent, HealthCheck check) {
         this.parent = parent;
@@ -48,6 +69,7 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         // email info
         mainGbc.gridy = 1;
         mainGbc.gridx = 1;
+        mainGbc.gridheight = 2;
         mainGbc.weighty = 1.0;
         mainGbc.weightx = 0.25;
         this.add(createEmailPanel(), mainGbc);
@@ -56,8 +78,41 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         mainGbc.gridy = 1;
         mainGbc.gridx = 0;
         mainGbc.weightx = 0.75;
+        mainGbc.gridheight = 1;
         this.add(createDataPanel(), mainGbc);
 
+        // add billable hour history
+        mainGbc.gridy = 2;
+        mainGbc.gridx = 0;
+        mainGbc.weighty = 0;
+        mainGbc.gridheight = 1;
+        this.add(createBillableHoursPanel(), mainGbc);
+
+    }
+
+    private JScrollPane createBillableHoursPanel() {
+        JPanel scrollPanel = new JPanel();
+        JScrollPane scrollPane = new JScrollPane(scrollPanel);
+        scrollPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
+        scrollPanel.setBackground(new Color(248, 248, 248));
+
+        Office office = check.getOffice();
+        YearMonth month = office.getMostRecentBillableHistory();
+        HashMap<String, Double> billableMap = office.getBillableHourHistory();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yy");
+        while (billableMap.containsKey(month.toString())) {
+            JPanel detailsPanel = new JPanel();
+            detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
+            JLabel monthYear = new JLabel(month.format(formatter));
+            detailsPanel.add(monthYear);
+            JLabel billableHours = new JLabel(String.valueOf(billableMap.get(month.toString())));
+            detailsPanel.add(billableHours);
+            scrollPanel.add(detailsPanel);
+            month = month.minusMonths(1);
+        }
+        return scrollPane;
     }
 
     private JPanel createEmailPanel() {
@@ -75,7 +130,7 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         JPanel templatePanel = new JPanel();
         templatePanel.setLayout(new BoxLayout(templatePanel, BoxLayout.X_AXIS));
         templatePanel.add(new JLabel("Email Template"));
-        JComboBox<String> emailTemplateBox = new JComboBox<>(MySettings.getInstance().getEmailTemplateNames().toArray(new String[0]));;
+        emailTemplateBox = new JComboBox<>(MySettings.getInstance().getEmailTemplateNames().toArray(new String[0]));;
         emailTemplateBox.setSelectedIndex(-1);
         emailTemplateBox.addActionListener(e -> {
             String template = (String) emailTemplateBox.getSelectedItem();
@@ -219,6 +274,14 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         gbc.gridy = 2;
         panel.add(leadershipPanel, gbc);
 
+        // save button
+        JButton saveBtn = new JButton("Save All");
+        saveBtn.addActionListener(this);
+        saveBtn.setActionCommand("save");
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        panel.add(saveBtn, gbc);
+
         return panel;
     }
 
@@ -232,22 +295,22 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         gbc.insets = new Insets(2, 2, 2, 2);
 
         gbc.gridy = 0;
-        JSpinner activeClientsField = new JSpinner();
+        activeClientsField = new JSpinner();
         activeClientsField.setValue(check.getActiveClients());
         panel.add(dataCollectionPanel("Number of Active Clients", activeClientsField), gbc);
 
         gbc.gridy = 1;
-        JSpinner activeCaregiversField = new JSpinner();
+        activeCaregiversField = new JSpinner();
         activeCaregiversField.setValue(check.getActiveCaregivers());
         panel.add(dataCollectionPanel("Number of Active Caregivers", activeCaregiversField), gbc);
 
         gbc.gridy = 2;
-        JSpinner expiredLicenseCountField = new JSpinner();
+        expiredLicenseCountField = new JSpinner();
         expiredLicenseCountField.setValue(check.getExpiredLicenseCount());
         panel.add(dataCollectionPanel("Expired License Count", expiredLicenseCountField), gbc);
 
         gbc.gridy = 3;
-        JSpinner clientGeneralSchedulesConfiguredField = new JSpinner();
+        clientGeneralSchedulesConfiguredField = new JSpinner();
         clientGeneralSchedulesConfiguredField.setValue(check.getClientGeneralSchedulesConfigured());
         panel.add(dataCollectionPanel("Clients Without a General Schedule", clientGeneralSchedulesConfiguredField), gbc);
 
@@ -256,27 +319,27 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
 
         gbc.gridx = 1;
         gbc.gridy = 0;
-        DatePicker lastLoginField = new DatePicker();
+        lastLoginField = new DatePicker();
         lastLoginField.setDate(check.getLastLogin());
         panel.add(dataCollectionPanel("Most Recent Login Date", lastLoginField), gbc);
 
         gbc.gridy = 1;
-        DatePicker oldestTaskDateField = new DatePicker();
+        oldestTaskDateField = new DatePicker();
         oldestTaskDateField.setDate(check.getOldestTaskDate());
         panel.add(dataCollectionPanel("Oldest Task Date", oldestTaskDateField), gbc);
 
         gbc.gridy = 2;
-        DatePicker lastBillingProcessDateField = new DatePicker();
+        lastBillingProcessDateField = new DatePicker();
         lastBillingProcessDateField.setDate(check.getLastBillingProcessDate());
         panel.add(dataCollectionPanel("Last Billing Process Date", lastBillingProcessDateField), gbc);
 
         gbc.gridy = 3;
-        DatePicker lastPayrollProcessDateField = new DatePicker();
+        lastPayrollProcessDateField = new DatePicker();
         lastPayrollProcessDateField.setDate(check.getLastPayrollProcessDate());
         panel.add(dataCollectionPanel("Last Payroll Process Date", lastPayrollProcessDateField), gbc);
 
         gbc.gridy = 4;
-        DatePicker lastScheduleDateField = new DatePicker();
+        lastScheduleDateField = new DatePicker();
         lastScheduleDateField.setDate(check.getLastScheduleDate());
         panel.add(dataCollectionPanel("Last Schedule Generation Date", lastScheduleDateField), gbc);
 
@@ -284,25 +347,25 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
 
         gbc.gridx = 2;
         gbc.gridy = 0;
-        JCheckBox shiftsInDifferentStatusesCheckBox = new JCheckBox();
+        shiftsInDifferentStatusesCheckBox = new JCheckBox();
         panel.add(dataCollectionPanel("Shifts in Different Statuses", shiftsInDifferentStatusesCheckBox), gbc);
         gbc.gridy = 1;
-        JCheckBox caregiversUsingTheAppCheckBox = new JCheckBox();
+        caregiversUsingTheAppCheckBox = new JCheckBox();
         panel.add(dataCollectionPanel("Caregivers Actively Using the App", caregiversUsingTheAppCheckBox), gbc);
         gbc.gridy = 2;
-        JCheckBox repeatAdjustmentsCheckBox = new JCheckBox();
+        repeatAdjustmentsCheckBox = new JCheckBox();
         panel.add(dataCollectionPanel("Repeat Adjustments being Made", repeatAdjustmentsCheckBox), gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 5;
-        JTextArea generalNotesArea = new JTextArea(check.getGeneralNotes());
+        generalNotesArea = new JTextArea(check.getGeneralNotes());
         generalNotesArea.setLineWrap(true);
         panel.add(dataCollectionPanel("General Notes", generalNotesArea), gbc);
 
         gbc.gridx = 1;
         gbc.gridwidth = 2;
         gbc.gridy = 5;
-        JTextArea contactReasonField = new JTextArea(check.getContactReason());
+        contactReasonField = new JTextArea(check.getContactReason());
         contactReasonField.setLineWrap(true);
         panel.add(dataCollectionPanel("Contact Reason", contactReasonField), gbc);
 
@@ -338,11 +401,16 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         assignedToField.setSelectedIndex(userList.indexOf(check.getAssignedTo()));
         assignedToField.addActionListener(e -> {
             int selectedIndex = assignedToField.getSelectedIndex();
-            if (healthCheckStatusLabel != null && selectedIndex > 1) {
-                healthCheckStatusLabel.setText("Assigned");
-                check.setAssignedTo(assignedToField.getItemAt(selectedIndex));
-
+            if (healthCheckStatusLabel == null) {
+                return;
             }
+            if (selectedIndex > 1) {
+                healthCheckStatusLabel.setText("Assigned");
+            }
+            if (selectedIndex == 1) {
+                healthCheckStatusLabel.setText("Unassigned");
+            }
+            check.setAssignedTo(assignedToField.getItemAt(selectedIndex));
         });
         panel.add(dataCollectionPanel("Assigned To", assignedToField), gbc);
 
@@ -376,10 +444,65 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         return panel;
     }
 
+    private void saveHealthCheck() {
+        check.setActiveClients((int) activeClientsField.getValue());
+        check.setActiveCaregivers((int) activeCaregiversField.getValue());
+        check.setExpiredLicenseCount((int) expiredLicenseCountField.getValue());
+        check.setClientGeneralSchedulesConfigured((int) clientGeneralSchedulesConfiguredField.getValue());
+        check.setShiftsInDifferentStatuses(shiftsInDifferentStatusesCheckBox.isSelected());
+        check.setCaregiversUsingTheApp(caregiversUsingTheAppCheckBox.isSelected());
+        check.setRepeatAdjustments(repeatAdjustmentsCheckBox.isSelected());
+        check.setGeneralNotes(generalNotesArea.getText());
+        check.setContactReason(contactReasonField.getText());
+
+        LocalDate date = lastLoginField.getDate();
+        if (date != null) {
+            check.setLastLogin(date);
+        }
+
+        date = oldestTaskDateField.getDate();
+        if (date != null) {
+            check.setOldestTaskDate(date);
+        }
+
+        date = lastBillingProcessDateField.getDate();
+        if (date != null) {
+            check.setLastBillingProcessDate(date);
+        }
+
+        date = lastPayrollProcessDateField.getDate();
+        if (date != null) {
+            check.setLastPayrollProcessDate(date);
+        }
+
+        date = lastScheduleDateField.getDate();
+        if (date != null) {
+            check.setLastScheduleDate(date);
+        }
+        // TODO write to Database
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getActionCommand().equals("email")) {
-            Email.prepEmail(getContactFirstName(), contactEmail.getText(), subjectTextField.getText(), bodyArea.getText());
+        String actionCommand = e.getActionCommand();
+        if (actionCommand.equals("email")) {
+            // TODO add save validation
+
+            LocalDate date = lastLoginField.getDate();
+            String body =  bodyArea.getText();
+
+            // replaces the <lastLoginDate> with the date of the last login.
+            if (date != null && body.contains("<lastLoginDate>")) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
+                String dateString = date.format(formatter);
+                body =  body.replaceAll("<lastLoginDate>", dateString);
+            }
+            check.setEmailTemplateSent((String) emailTemplateBox.getSelectedItem());
+            saveHealthCheck();
+            Email.prepEmail(getContactFirstName(), contactEmail.getText(), subjectTextField.getText(), body);
+        }
+        if (actionCommand.equals("save")) {
+            saveHealthCheck();
         }
     }
 }

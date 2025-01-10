@@ -1,4 +1,4 @@
-package healthcheck.gui.mainpanels;
+package healthcheck.gui.mainpanels.offices;
 
 import healthcheck.data.Office;
 import healthcheck.data.firestore.WriteData;
@@ -13,6 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 
 import com.github.lgooddatepicker.components.DatePicker;
@@ -79,7 +80,7 @@ public class OfficePanel extends JPanel implements ActionListener {
         // office billable hour history panel
         gbc.gridy = 2;
         gbc.weighty = 0.09;
-        this.add(buildBillableHoursPanel(), gbc);
+        this.add(createBillableHoursPanel(), gbc);
     }
 
 
@@ -109,14 +110,18 @@ public class OfficePanel extends JPanel implements ActionListener {
         navGbc.gridx = 1;
         navGbc.weightx = 0;
         // save panel config
-        JPanel navSavePanel = new JPanel();
+        JPanel buttonPanel = new JPanel();
         navOptionsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-        navSavePanel.setBackground(new Color(0, 122, 178));
+        buttonPanel.setBackground(new Color(0, 122, 178));
         JButton saveButton = new JButton("Save");
         saveButton.setActionCommand("save");
         saveButton.addActionListener(this);
-        navSavePanel.add(saveButton);
-        navPanel.add(navSavePanel, navGbc);
+        buttonPanel.add(saveButton);
+        JButton backButton = new JButton("Back");
+        backButton.setActionCommand("back");
+        backButton.addActionListener(this);
+        buttonPanel.add(backButton);
+        navPanel.add(buttonPanel, navGbc);
 
         return navPanel;
     }
@@ -211,20 +216,21 @@ public class OfficePanel extends JPanel implements ActionListener {
         infoPanel.add(detailsPanel);
     }
 
-    private JScrollPane buildBillableHoursPanel() {
+    private JScrollPane createBillableHoursPanel() {
         JPanel scrollPanel = new JPanel();
         JScrollPane scrollPane = new JScrollPane(scrollPanel);
         scrollPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
+        scrollPanel.setBackground(new Color(248, 248, 248));
 
         YearMonth month = office.getMostRecentBillableHistory();
         HashMap<String, Double> billableMap = office.getBillableHourHistory();
 
-
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yy");
         while (billableMap.containsKey(month.toString())) {
             JPanel detailsPanel = new JPanel();
             detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
-            detailsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-            JLabel monthYear = new JLabel(month.toString());
+            JLabel monthYear = new JLabel(month.format(formatter));
             detailsPanel.add(monthYear);
             JLabel billableHours = new JLabel(String.valueOf(billableMap.get(month.toString())));
             detailsPanel.add(billableHours);
@@ -253,10 +259,14 @@ public class OfficePanel extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println(e.getActionCommand());
-        if (e.getActionCommand().equals("save")) {
+        String actionCommand = e.getActionCommand();
+        System.out.println(actionCommand);
+        if (actionCommand.equals("save")) {
             updateOfficeData();
             WriteData.writeOffice(office);
+        }
+        if (actionCommand.equals("back")) {
+            parent.loadPanel(new OfficeListPanelTest(parent));
         }
     }
 }

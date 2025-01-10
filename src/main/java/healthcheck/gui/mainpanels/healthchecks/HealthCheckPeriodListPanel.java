@@ -3,10 +3,7 @@ package healthcheck.gui.mainpanels.healthchecks;
 import healthcheck.data.HealthCheck;
 import healthcheck.data.HealthCheckPeriod;
 import healthcheck.data.Office;
-import healthcheck.data.firestore.Database;
-import healthcheck.data.firestore.ReadData;
-import healthcheck.gui.MainWindow;
-import healthcheck.gui.mainpanels.OfficePanel;
+import healthcheck.gui.mainpanels.offices.OfficePanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -84,6 +81,9 @@ public class HealthCheckPeriodListPanel extends JPanel implements ActionListener
         managePanel.setBackground(new Color(248, 248, 248));
         managePanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
+        JCheckBox globalBox = new JCheckBox();
+        managePanel.add(globalBox);
+
 
         JButton addNewButton = new JButton("Add New");
         addNewButton.setActionCommand("addNew");
@@ -117,22 +117,29 @@ public class HealthCheckPeriodListPanel extends JPanel implements ActionListener
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         panel.setBorder(BorderFactory.createLineBorder(Color.black));
-        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.BOTH;
+
+        // checkbox
+        gbc.gridx = 0;
+        JCheckBox globalBox = new JCheckBox();
+        // TODO map {officeCode, checkbox} to track changes
+        panel.add(globalBox, gbc);
 
         // edit button
-        gbc.gridx = 0;
+        gbc.gridx = 1;
         JButton btn = new JButton("Edit");
         btn.addActionListener(this);
         btn.setActionCommand(office.getOfficeCode());
         panel.add(btn, gbc);
 
         // office code
-        gbc.gridx = 1;
+        gbc.gridx = 2;
         gbc.weightx = 1.0;
         panel.add(new JLabel(office.getOfficeCode()), gbc);
 
         // office name
-        gbc.gridx = 2;
+        gbc.gridx = 3;
         panel.add(new JLabel(office.getOfficeName()), gbc);
         return panel;
     }
