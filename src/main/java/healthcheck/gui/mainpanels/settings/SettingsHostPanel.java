@@ -2,8 +2,6 @@ package healthcheck.gui.mainpanels.settings;
 
 import healthcheck.data.MySettings;
 import healthcheck.gui.MainWindow;
-import healthcheck.gui.mainpanels.healthchecks.HealthCheckPeriodDetailsPanel;
-import healthcheck.gui.mainpanels.healthchecks.HealthCheckPeriodListPanel;
 
 import javax.swing.*;
 import java.awt.*;

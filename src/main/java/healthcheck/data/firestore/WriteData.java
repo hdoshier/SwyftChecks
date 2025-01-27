@@ -6,7 +6,6 @@ import healthcheck.data.Office;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 public class WriteData {
 
@@ -40,18 +39,44 @@ public class WriteData {
 
     }
 
-    public static void writeOffice(Office office) {
+    public static void saveOffice(Office office) {
+        // pushes the data to the database
+        Firestore db = Database.getFirestore();
+        if (office.isActiveOffice()) {
+            db.collection("offices").document(office.getOfficeCode()).set(packageOffice(office));
+        } else {
+            db.collection("inactiveOffices").document(office.getOfficeCode()).set(packageOffice(office));
+        }
+    }
+
+    /**
+     * Switches which collection the given office is a part of. If the office is being activated
+     * it will be moved from the "inactiveOffices" collection to the "offices" collection.
+     * Vise versa when deactivating an office.
+     *
+     * @param office
+     */
+    public static void switchOfficeCollection(Office office) {
+        Firestore db = Database.getFirestore();
+        if (office.isActiveOffice()) {
+            // Move office from "inactiveOffices" to "offices"
+            db.collection("inactiveOffices").document(office.getOfficeCode()).delete();
+            db.collection("offices").document(office.getOfficeCode()).set(packageOffice(office));
+        } else {
+            // Move office from "offices" to "inactiveOffices"
+            db.collection("offices").document(office.getOfficeCode()).delete();
+            db.collection("inactiveOffices").document(office.getOfficeCode()).set(packageOffice(office));
+        }
+    }
+
+    private static HashMap<String, Object> packageOffice (Office office) {
         HashMap<String, Object> data = new HashMap<>(12);
 
         //all office data to be written
         data.put("officeCode", office.getOfficeCode());
         data.put("officeName", office.getOfficeName());
-        LocalDate date = office.getLastHealthCheckDate();
-        if (date != null) {
-            data.put("lastHealthCheckDate", date.toString());
-        }
 
-        date = office.getExecAgreementDate();
+        LocalDate date = office.getExecAgreementDate();
         if (date != null) {
             data.put("execAgreementDate", date.toString());
         }
@@ -60,33 +85,23 @@ public class WriteData {
         data.put("officeOwnerEmail", office.getOfficeOwnerEmail());
         data.put("officePrimaryContactPerson", office.getOfficePrimaryContactPerson());
         data.put("officePrimaryContactEmail", office.getOfficePrimaryContactEmail());
+        data.put("officePrimaryContactPhone", office.getOfficePrimaryContactPhone());
         data.put("leadershipNotes", office.getLeadershipNotes());
         data.put("generalNotes", office.getGeneralNotes());
+        data.put("contactlNotes", office.getContactNotes());
         data.put("trainingStatus", office.getTrainingStatus());
         data.put("billableHourHistory", office.getBillableHourHistory());
+        data.put("activeOffice", office.isActiveOffice());
 
-        // pushes the data to the database
-        Firestore db = Database.getFirestore();
-        db.collection("offices").document(office.getOfficeCode()).set(data);
+        return data;
     }
 
-    public static void writeOfficeObject (Office office) {
-        Firestore db = Database.getFirestore();
-        db.collection("offices").document(office.getOfficeCode()).set(office);
-    }
-
-    public static void writeExcludedOffice (HashSet<String> set) {
-        Firestore db = Database.getFirestore();
-        //0 Office Code | 1 Office Name | 2 Owner Name | 3 Owner Email | 4 Owner Phone | 7 Agreement Exec. Date
-
-        try {
-            HashMap<String, List> map = new HashMap<>(1);
-            map.put("offices", new ArrayList<String>(set));
-            db.collection("settings").document("excludedOffices").set(map).get();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
+    /**
+     * This method is to be explicitly run if I need to merge a new data field to the Database.
+     *
+     * Build it to push new data to the DB.
+     */
+    public static void mergeNewDataToDatabase() {
 
     }
 }

@@ -1,56 +1,52 @@
 package healthcheck.gui.mainpanels.offices;
 
 import healthcheck.data.Office;
+import healthcheck.data.firestore.Database;
 import healthcheck.data.firestore.WriteData;
 import healthcheck.gui.MainWindow;
 
 import javax.swing.*;
-import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 
 import com.github.lgooddatepicker.components.DatePicker;
 
 /**
- *The ExpensePanel gui class.
+ *The OfficePanel gui class.
  *
- *<p>This class creates the panel that manages Expenses.
+ *<p>This class creates the panel that manages Office specific data.
  *
- *@author Hunter Doshier hunterdoshier@ksu.edu
+ *@author Hunter Doshier
  *
  *@version 0.1
  */
 public class OfficePanel extends JPanel implements ActionListener {
-    MainWindow parent;
+    MainWindow mainWindow;
+    OfficeListPanel officeListPanel;
+    JPanel otherParentPanel;
     Office office;
     JPanel hostPanel;
-
-    private JTextField officeNameFieldField;
-    private DatePicker lastHealthCheckDateField;
     private DatePicker execAgreementDateField;
+    private JTextField officeNameField;
     private JTextField officeOwnerField;
     private JTextField officeOwnerEmailField;
     private JTextField officePrimaryContactPersonField;
     private JTextField officePrimaryContactEmailField;
+    private JTextField officePrimaryContactPhoneField;
     private JTextArea leadershipNotesField;
     private JTextArea generalNotesField;
-    // private Spinn trainingStatusField;
+    private JTextArea contactNotesField;
+    private JComboBox<String> trainingStatusComboBox;
 
-    /**
-     *Constructs the panel.
-     *
-     *@param parent is the parent window.
-     *
-     */
-    public OfficePanel(MainWindow parent, Office office) {
-        this.parent = parent;
+    public OfficePanel(MainWindow mainWindow, OfficeListPanel officeListPanel, Office office) {
+        this.officeListPanel = officeListPanel;
+        this.mainWindow = mainWindow;
         buildOfficePanel(office);
     }
 
@@ -66,6 +62,7 @@ public class OfficePanel extends JPanel implements ActionListener {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(2, 2, 2, 2);
 
         // navigation panel
         gbc.gridx = 0;
@@ -75,12 +72,7 @@ public class OfficePanel extends JPanel implements ActionListener {
         // office data/info panel
         gbc.gridy = 1;
         gbc.weighty = 1.0;
-        this.add(buildInfoPanel(), gbc);
-
-        // office billable hour history panel
-        gbc.gridy = 2;
-        gbc.weighty = 0.09;
-        this.add(createBillableHoursPanel(), gbc);
+        this.add(buildContentPanel(), gbc);
     }
 
 
@@ -89,28 +81,44 @@ public class OfficePanel extends JPanel implements ActionListener {
         JPanel navPanel = new JPanel();
         navPanel.setBackground(new Color(0, 122, 178)); // Base color
         navPanel.setLayout(new GridBagLayout());
+        navPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
         GridBagConstraints navGbc = new GridBagConstraints();
-        navGbc.gridx = 0;
-        navGbc.gridy = 0;
-        navGbc.weightx = 1.0;
-
-        // nav options
-        //configure nav options panel
         JPanel navOptionsPanel = new JPanel();
         navOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         navOptionsPanel.setBackground(new Color(0, 122, 178));
+
+        // have next and prev buttons to the far left
+        navGbc.gridx = 0;
+        // switch office panel config
+        JPanel buttonPanel = new JPanel();
+        navOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        buttonPanel.setBackground(new Color(0, 122, 178));
+        JButton prevButton = new JButton("Prev");
+        prevButton.setActionCommand("prev");
+        prevButton.addActionListener(this);
+        buttonPanel.add(prevButton);
+        JButton nextButton = new JButton("Next");
+        nextButton.setActionCommand("next");
+        nextButton.addActionListener(this);
+        buttonPanel.add(nextButton);
+        navPanel.add(buttonPanel, navGbc);
+
+
+
         //add nav options
+        navGbc.gridx = 1;
+        navGbc.weightx = 1.0;
         addNavItem(navOptionsPanel, office.getOfficeCode(), true);
         addNavItem(navOptionsPanel, "Health Check History", false);
         navPanel.add(navOptionsPanel, navGbc);
 
 
         // have save button be on the far right
-        navGbc.gridx = 1;
+        navGbc.gridx = 2;
         navGbc.weightx = 0;
         // save panel config
-        JPanel buttonPanel = new JPanel();
+        buttonPanel = new JPanel();
         navOptionsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(new Color(0, 122, 178));
         JButton saveButton = new JButton("Save");
@@ -158,101 +166,205 @@ public class OfficePanel extends JPanel implements ActionListener {
         panel.add(navItem);
     }
 
-    private JPanel buildInfoPanel() {
-        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        infoPanel.setBackground(new Color(248, 248, 248));
-        infoPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+    private JPanel buildContentPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(new Color(248, 248, 248));
+        panel.setBorder(BorderFactory.createLineBorder(Color.black));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 2, 2, 2);
+        gbc.weighty = 1.0;
+        gbc.weightx = 0.3333;
+        gbc.fill = GridBagConstraints.BOTH;
 
-        officeNameFieldField = new JTextField(office.getOfficeName());
-        officeOwnerField = new JTextField(office.getOfficeOwner());
-        officeOwnerEmailField = new JTextField(office.getOfficeOwnerEmail());
-        officePrimaryContactPersonField = new JTextField(office.getOfficePrimaryContactPerson());
-        officePrimaryContactEmailField = new JTextField(office.getOfficePrimaryContactEmail());
-        leadershipNotesField = new JTextArea(office.getLeadershipNotes(), 7, 7);
-        generalNotesField = new JTextArea(office.getGeneralNotes(), 7, 7);
-        // private Spinn trainingStatusField;
-        addJTextDetailsPanel(infoPanel, "Office Name", officeNameFieldField);
-        addJTextDetailsPanel(infoPanel, "Owner", officeOwnerField);
-        addJTextDetailsPanel(infoPanel, "Owner Email", officeOwnerEmailField);
-        addJTextDetailsPanel(infoPanel, "Primary Contact", officePrimaryContactPersonField);
-        addJTextDetailsPanel(infoPanel, "Primary Contact Email", officePrimaryContactEmailField);
+        // office info panel
+        panel.add(createOfficeInfoPanel(), gbc);
+
+        // contact info panel
+        gbc.gridx = 1;
+        panel.add(createContactInfoPanel(), gbc);
+
+        // billable hours panel
+        gbc.gridx = 2;
+        gbc.weightx = 0.25;
+        panel.add(createBillableHoursPanel(), gbc);
 
 
-        lastHealthCheckDateField = new DatePicker();
+        return panel;
+    }
+
+    private JPanel createOfficeInfoPanel() {
+        GridBagConstraints gbc = gbcFactory();
+        JPanel panel = panelFactory("Office Info", gbc);
+
+        // office name
+        gbc.gridy = 1;
+        JPanel dataPanel = new JPanel();
+        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
+        dataPanel.add(new JLabel("Office Name"));
+        officeNameField = new JTextField(office.getOfficeName());
+        dataPanel.add(officeNameField);
+        panel.add(dataPanel, gbc);
+
+        // agreement date
+        gbc.gridy = 2;
+        dataPanel = new JPanel();
+        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
+        dataPanel.add(new JLabel("SwyftOps Start Date"));
         execAgreementDateField = new DatePicker();
-        addDateFieldDetailsPanel(infoPanel, "Last Health Check Date", lastHealthCheckDateField, office.getLastHealthCheckDate());
-        addDateFieldDetailsPanel(infoPanel, "Agreement Date", execAgreementDateField, office.getExecAgreementDate());
+        execAgreementDateField.setDate(office.getExecAgreementDate());
+        dataPanel.add(execAgreementDateField);
+        panel.add(dataPanel, gbc);
 
-        //addJTextDetailsPanel(infoPanel, "Training Status", office.getTrainingStatus(), officeOwnerEmail);
-        addJTextDetailsPanel(infoPanel, "General Notes", generalNotesField);
-        addJTextDetailsPanel(infoPanel, "Leadership Notes", leadershipNotesField);
+        // training status
+        gbc.gridy = 3;
+        dataPanel = new JPanel();
+        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
+        dataPanel.add(new JLabel("Training Status"));
+        String[] arr =
+                {"Hasn't Begun Training", "Session 1 Completed", "Session 2 Completed", "Session 3 Completed", "Training Completed"};
+        trainingStatusComboBox = new JComboBox<>(arr);
+        trainingStatusComboBox.setSelectedIndex(office.getTrainingStatus());
+        dataPanel.add(trainingStatusComboBox);
+        panel.add(dataPanel, gbc);
 
 
+        // leadership notes
+        gbc.weighty = 1;
+        gbc.gridy = 4;
+        dataPanel = new JPanel();
+        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
+        dataPanel.add(new JLabel("Leadership Notes"));
+        leadershipNotesField = new JTextArea(office.getLeadershipNotes());
+        leadershipNotesField.setLineWrap(true);
+        dataPanel.add(leadershipNotesField);
+        panel.add(dataPanel, gbc);
 
-        return infoPanel;
+        // general notes
+        gbc.gridy = 5;
+        dataPanel = new JPanel();
+        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
+        dataPanel.add(new JLabel("General Notes"));
+        generalNotesField = new JTextArea(office.getGeneralNotes());
+        generalNotesField.setLineWrap(true);
+        dataPanel.add(generalNotesField);
+        panel.add(dataPanel, gbc);
+
+        // deactivate button
+        gbc.gridy = 6;
+        gbc.weighty = 0;
+        JButton statusButton = new JButton(office.isActiveOffice() ? "Deactivate" : "Activate");
+        statusButton.addActionListener(this);
+        statusButton.setActionCommand("statusChange");
+        panel.add(statusButton, gbc);
+
+        return panel;
     }
 
-    private void addJTextDetailsPanel (JPanel infoPanel, String labelText, JTextComponent textField) {
-        JPanel textPanel = new JPanel();
-        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-        JLabel label = new JLabel(labelText);
-        textPanel.add(label);
-        textPanel.add(textField);
+    private JPanel createContactInfoPanel() {
+        GridBagConstraints gbc = gbcFactory();
+        JPanel panel = panelFactory("Contact Info", gbc);
 
-        infoPanel.add(textPanel);
+        // Owner name
+        gbc.gridy = 1;
+        JPanel dataPanel = new JPanel();
+        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
+        dataPanel.add(new JLabel("Owner Name"));
+        officeOwnerField = new JTextField(office.getOfficeOwner());
+        dataPanel.add(officeOwnerField);
+        panel.add(dataPanel, gbc);
 
-        if (textField instanceof JTextArea textArea) {
-            textArea.setLineWrap(true);
+        // Owner Email
+        gbc.gridy = 2;
+        dataPanel = new JPanel();
+        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
+        dataPanel.add(new JLabel("Owner Email"));
+        officeOwnerEmailField = new JTextField(office.getOfficeOwnerEmail());
+        dataPanel.add(officeOwnerEmailField);
+        panel.add(dataPanel, gbc);
+
+        // Primary Contact
+        gbc.gridy = 3;
+        dataPanel = new JPanel();
+        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
+        dataPanel.add(new JLabel("Primary Contact Name"));
+        officePrimaryContactPersonField = new JTextField(office.getOfficePrimaryContactPerson());
+        dataPanel.add(officePrimaryContactPersonField);
+        panel.add(dataPanel, gbc);
+
+        // primary contact email
+        gbc.gridy = 4;
+        dataPanel = new JPanel();
+        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
+        dataPanel.add(new JLabel("Primary Contact Email"));
+        officePrimaryContactEmailField = new JTextField(office.getOfficePrimaryContactEmail());
+        dataPanel.add(officePrimaryContactEmailField);
+        panel.add(dataPanel, gbc);
+
+        // primary contact phone number
+        gbc.gridy = 5;
+        dataPanel = new JPanel();
+        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
+        dataPanel.add(new JLabel("Primary Contact Phone Number"));
+        officePrimaryContactPhoneField = new JTextField(office.getOfficePrimaryContactPhone());
+        dataPanel.add(officePrimaryContactPhoneField);
+        panel.add(dataPanel, gbc);
+
+
+        // contact notes
+        gbc.gridy = 6;
+        gbc.weighty = 1;
+        dataPanel = new JPanel();
+        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
+        dataPanel.add(new JLabel("Contact Notes"));
+        contactNotesField = new JTextArea(office.getContactNotes());
+        contactNotesField.setLineWrap(true);
+        dataPanel.add(contactNotesField);
+        panel.add(dataPanel, gbc);
+
+        return panel;
+    }
+
+    private JPanel createBillableHoursPanel() {
+        GridBagConstraints gbc = gbcFactory();
+        JPanel panel = panelFactory("Billable Hour History", gbc);
+        JScrollPane scrollPane = new JScrollPane();
+        JPanel hourHistoryHostPanel = new JPanel();
+        hourHistoryHostPanel.setLayout(new BoxLayout(hourHistoryHostPanel, BoxLayout.Y_AXIS));
+
+        HashMap<String, Double> map = office.getBillableHourHistory();
+
+        for (String month : office.getSortedBillableHourHistoryList()) {
+            Double hourCount = map.get(month);
+            JLabel label = new JLabel(month + " : " + hourCount);
+            hourHistoryHostPanel.add(label);
         }
+
+        scrollPane.setViewportView(hourHistoryHostPanel);
+
+        gbc.gridy = 1;
+        gbc.weighty = 1.0;
+        panel.add(scrollPane, gbc);
+        return panel;
     }
 
-    private void addDateFieldDetailsPanel (JPanel infoPanel, String labelText, DatePicker dateField, LocalDate date) {
-        JPanel detailsPanel = new JPanel();
-        detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
-        JLabel label = new JLabel(labelText);
-        detailsPanel.add(label);
-        dateField.setDate(date);
-        detailsPanel.add(dateField);
-        infoPanel.add(detailsPanel);
+    private GridBagConstraints gbcFactory() {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.insets = new Insets(2, 2, 2, 2);
+        return gbc;
     }
 
-    private JScrollPane createBillableHoursPanel() {
-        JPanel scrollPanel = new JPanel();
-        JScrollPane scrollPane = new JScrollPane(scrollPanel);
-        scrollPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
-        scrollPanel.setBackground(new Color(248, 248, 248));
+    private JPanel panelFactory (String header, GridBagConstraints gbc) {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(new Color(0, 122, 178));
+        panel.setBorder(BorderFactory.createLineBorder(Color.black));
+        JLabel label = new JLabel(header);
+        label.setForeground(Color.WHITE);
+        label.setFont(new Font("Arial", Font.PLAIN, 16));
+        panel.add(label, gbc);
 
-        YearMonth month = office.getMostRecentBillableHistory();
-        HashMap<String, Double> billableMap = office.getBillableHourHistory();
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yy");
-        while (billableMap.containsKey(month.toString())) {
-            JPanel detailsPanel = new JPanel();
-            detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
-            JLabel monthYear = new JLabel(month.format(formatter));
-            detailsPanel.add(monthYear);
-            JLabel billableHours = new JLabel(String.valueOf(billableMap.get(month.toString())));
-            detailsPanel.add(billableHours);
-            scrollPanel.add(detailsPanel);
-            month = month.minusMonths(1);
-        }
-        return scrollPane;
-    }
-
-    private void updateOfficeData() {
-        office.setOfficeName(officeNameFieldField.getText());
-        office.setOfficeOwner(officeOwnerField.getText());
-        office.setOfficeOwnerEmail(officeOwnerEmailField.getText());
-        office.setOfficePrimaryContactPerson(officePrimaryContactPersonField.getText());
-        office.setOfficePrimaryContactEmail(officePrimaryContactEmailField.getText());
-        //office.setTrainingStatus();
-        office.setLeadershipNotes(leadershipNotesField.getText());
-        office.setGeneralNotes(generalNotesField.getText());
-
-        LocalDate date = execAgreementDateField.getDate();
-        office.setExecAgreementDate(date);
-        //TODO private LocalDate lastHealthCheckDate = null;
+        return panel;
     }
 
 
@@ -263,10 +375,40 @@ public class OfficePanel extends JPanel implements ActionListener {
         System.out.println(actionCommand);
         if (actionCommand.equals("save")) {
             updateOfficeData();
-            WriteData.writeOffice(office);
+            WriteData.saveOffice(office);
         }
         if (actionCommand.equals("back")) {
-            parent.loadPanel(new OfficeListPanelTest(parent));
+            mainWindow.loadPanel(officeListPanel);
+        }
+        if (actionCommand.equals("next")) {
+            officeListPanel.loadNextOffice();
+        }
+        if (actionCommand.equals("prev")) {
+            officeListPanel.loadPreviousOffice();
+        }
+        if (actionCommand.equals("statusChange")) {
+            Database db = Database.getInstance();
+            // TODO create confirmation dialog
+            System.out.println(office.isActiveOffice());
+            db.switchOfficeStatus(office);
+            // TODO reload this panel
         }
     }
+
+    private void updateOfficeData() {
+        office.setOfficeName(officeNameField.getText());
+        office.setOfficeOwner(officeOwnerField.getText());
+        office.setOfficeOwnerEmail(officeOwnerEmailField.getText());
+        office.setOfficePrimaryContactPerson(officePrimaryContactPersonField.getText());
+        office.setOfficePrimaryContactEmail(officePrimaryContactEmailField.getText());
+        office.setOfficePrimaryContactPhone(officePrimaryContactPhoneField.getText());
+        office.setTrainingStatus(trainingStatusComboBox.getSelectedIndex());
+        office.setLeadershipNotes(leadershipNotesField.getText());
+        office.setGeneralNotes(generalNotesField.getText());
+        office.setContactNotes(contactNotesField.getText());
+        LocalDate date = execAgreementDateField.getDate();
+        office.setExecAgreementDate(date);
+    }
 }
+
+

@@ -1,5 +1,6 @@
 package healthcheck.data;
 
+import healthcheck.data.customlists.OfficeList;
 import healthcheck.data.firestore.Database;
 
 import java.io.Serializable;
@@ -32,9 +33,13 @@ public class HealthCheckPeriod implements Serializable {
     }
 
     private void addHealthChecks() {
-        ArrayList<Office> officeList = Database.getInstance().getAllOfficesList();
+        OfficeList officeList = Database.getInstance().getOfficeList();
         healthCheckList = new ArrayList<>(officeList.size());
         for (Office office : officeList) {
+            // No health check is performed for offices not receiving one
+            if (!office.isActiveOffice()) {
+                continue;
+            }
             HealthCheck check = new HealthCheck(office);
             healthCheckList.add(check);
         }

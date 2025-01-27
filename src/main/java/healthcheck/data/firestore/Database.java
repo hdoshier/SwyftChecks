@@ -1,6 +1,5 @@
 package healthcheck.data.firestore;
 
-import com.google.api.core.ApiFuture;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.*;
 import com.google.firebase.FirebaseApp;
@@ -9,68 +8,35 @@ import com.google.firebase.cloud.FirestoreClient;
 import healthcheck.data.HealthCheckPeriod;
 import healthcheck.data.MySettings;
 import healthcheck.data.Office;
+import healthcheck.data.customlists.OfficeList;
 
 import java.io.FileInputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 public class Database {
     private static Database instance = null;
     private Firestore firestore;
-    private ArrayList<Office> officeList;
-    private HashSet<String> excludedOffices;
+    private OfficeList officeList;
     private ArrayList<HealthCheckPeriod> healthCheckPeriodList;
     private MySettings settings;
+    private boolean inactiveOfficesLoaded;
+    private LocalDate databaseCreationDate = LocalDate.now();
 
     private Database() {
         instance = this;
         firestore = initializeFirebase();
-        officeList = ReadData.getOfficeList();
+        officeList = new OfficeList(ReadData.getActiveOfficeList());
         healthCheckPeriodList = new ArrayList<>();
         settings = MySettings.getInstance();
+        inactiveOfficesLoaded = false;
     }
 
     public static Database getInstance() {
-        if (instance == null) {
+        if (instance == null || instance.isOldDatabase()) {
             instance = new Database();
         }
         return instance;
-    }
-
-    /**
-     * Checks to see if the office is supposed to be excluded from the database.
-     * @param officeCode
-     * @return
-     */
-    public boolean isExcludedOffice(String officeCode) {
-        return excludedOffices.contains(officeCode);
-    }
-
-    public void addExcludedOffice(String officeCode) {
-        excludedOffices.add(officeCode);
-        WriteData.writeExcludedOffice(excludedOffices);
-    }
-
-    /**
-     * Checks to see if the database contains the specified office.
-     * @param office
-     * @return true if the office exist in the database, false if not.
-     */
-    public boolean containsOffice(Office office) {
-        return containsOffice(office.getOfficeCode());
-    }
-
-    public boolean containsOffice(String officeCode) {
-        if (officeList == null) {
-            getAllOfficesList();
-        }
-        for (Office office : officeList) {
-            if (office.getOfficeCode().equals(officeCode)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public HealthCheckPeriod addNewHealthCheckPeriod(LocalDate start, LocalDate end) {
@@ -79,27 +45,39 @@ public class Database {
         return period;
     }
 
+    public void switchOfficeStatus(Office office) {
+        System.out.println(office.isActiveOffice());
+        office.setActiveOffice(!office.isActiveOffice());
+        System.out.println(office.isActiveOffice());
+        WriteData.switchOfficeCollection(office);
+    }
+
+    public void loadInactiveOffices() {
+        // skip if the inactive offices have already been added to the officeList
+        if (inactiveOfficesLoaded) {
+            return;
+        }
+
+        inactiveOfficesLoaded = true;
+        officeList.addAll(ReadData.getInactiveOfficeList());
+    }
+
+    /**
+     * Resets the database to match what's in the Firestore.
+     * Only resets the database if it's 2 or more days old. This check happens everytime the database instance is called.
+     */
+    public boolean isOldDatabase() {
+        // if officeList is older than yesterday, reload it.
+        return databaseCreationDate.isBefore(LocalDate.now().minusDays(1));
+    }
+
 
     // getters and setters
-
-
     public ArrayList<HealthCheckPeriod> getHealthCheckPeriodList() {
         return healthCheckPeriodList;
     }
 
-    public void setHealthCheckPeriodList(ArrayList<HealthCheckPeriod> healthCheckPeriodList) {
-        this.healthCheckPeriodList = healthCheckPeriodList;
-    }
-
-    public static Firestore getFirestore() {
-        return instance.firestore;
-    }
-
-    public HashSet<String> getExcludedOffices() {
-        return excludedOffices;
-    }
-
-    public ArrayList<Office> getAllOfficesList(){
+    public OfficeList getOfficeList(){
         return officeList;
     }
 
@@ -123,5 +101,9 @@ public class Database {
 
     public void clearDatabase() {
         instance = null;
+    }
+
+    public static Firestore getFirestore() {
+        return instance.firestore;
     }
 }

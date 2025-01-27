@@ -12,7 +12,6 @@ public class MySettings {
     private static MySettings instance;
     private ArrayList<String> users;
     private HashMap<String, String> emailTemplates;
-    private HashSet<String> excludedOffices;
 
     public static MySettings getInstance() {
         if (instance == null) {
@@ -25,7 +24,6 @@ public class MySettings {
         MySettings.instance = this;
         DocumentSnapshot document = ReadData.getSettingsDocument();
         configureUsers(document);
-        configureExcludedOffices(document);
         configureEmailSettings(document);
     }
 
@@ -81,17 +79,7 @@ public class MySettings {
         users = ReadData.getUsers(document);
     }
 
-    private void configureExcludedOffices(DocumentSnapshot document) {
-        excludedOffices = ReadData.getExcludedOfficeSet(document);
-    }
-
-
-
     public ArrayList<String> getUsers() {
         return users;
-    }
-
-    public HashSet<String> getExcludedOffices() {
-        return excludedOffices;
     }
 }

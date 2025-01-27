@@ -5,8 +5,6 @@ import healthcheck.gui.MainWindow;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -129,7 +127,7 @@ public class HealthCheckPeriodPanel extends JPanel {
             detailsLabelActive = false;
             detailsLabel.setBackground(new Color(0, 122, 178));
             healthCheckLabel.setBackground(new Color(255, 151, 25));
-            setContentPanel(new HealthCheckPeriodListPanel(this, period));
+            setContentPanel(new HealthCheckPeriodListPanelNew(this, period));
         }
         if(view.equals("Details")) {
             System.out.println(view);

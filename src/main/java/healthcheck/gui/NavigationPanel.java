@@ -2,7 +2,6 @@ package healthcheck.gui;
 
 import healthcheck.gui.mainpanels.healthchecks.HealthCheckHostPanel;
 import healthcheck.gui.mainpanels.offices.OfficeListPanel;
-import healthcheck.gui.mainpanels.offices.OfficeListPanelTest;
 import healthcheck.gui.mainpanels.settings.SettingsHostPanel;
 
 import java.awt.*;
@@ -78,13 +77,13 @@ public class NavigationPanel extends JPanel {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (activeLabel != navItem) {
-                    activeLabel.setBackground(new Color(0, 122, 178));
-                    activeLabel = navItem;
-                    activeLabel.setBackground(new Color(255, 151, 25));
-                    System.out.println(name + " clicked");
-                    actionPerformed(name);
-                }
+
+                activeLabel.setBackground(new Color(0, 122, 178));
+                activeLabel = navItem;
+                activeLabel.setBackground(new Color(255, 151, 25));
+                System.out.println(name + " clicked");
+                actionPerformed(name);
+
             }
         });
 
@@ -99,7 +98,7 @@ public class NavigationPanel extends JPanel {
             //parent.loadPanel(new MonthlyPanel(parent));
         }
         if ("Offices".equals(action)) {
-            parent.loadPanel(new OfficeListPanelTest(parent));
+            parent.loadPanel(new OfficeListPanel(parent));
         }
         if ("Health Checks".equals(action)) {
             parent.loadPanel(new HealthCheckHostPanel(parent));

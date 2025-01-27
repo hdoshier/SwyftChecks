@@ -1,5 +1,6 @@
 package healthcheck.data;
 
+import healthcheck.data.customlists.OfficeList;
 import healthcheck.data.firestore.Database;
 import healthcheck.data.firestore.ReadData;
 import healthcheck.data.firestore.WriteData;
@@ -23,15 +24,14 @@ public class DataImport {
 
             // skips first line of csv
             String line = importFile.nextLine();
+            OfficeList officeList = Database.getInstance().getOfficeList();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
 
             // loops through each line in the CSV
             while (importFile.hasNext()) {
                 line = importFile.nextLine();
                 String[] splitLine = line.split("~");
-
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
-                updateOfficeData(splitLine, formatter);
-
+                updateOfficeData(splitLine, officeList, formatter);
             }
 
         } catch (Exception e) {
@@ -45,29 +45,23 @@ public class DataImport {
      *
      * @param splitLine String array containing all the office data from the CSV.
      */
-    private static void updateOfficeData(String[] splitLine, DateTimeFormatter formatter) {
+    private static void updateOfficeData(String[] splitLine, OfficeList officeList, DateTimeFormatter formatter) {
         String officeCode = splitLine[0].replace('-', ' ').trim();
 
 
 
-        //check if it's an excluded office
-        if (Database.getInstance().isExcludedOffice(officeCode)) {
-            return;
-        }
-
-        // TODO create a settings hashset of excluded office values
-        //TODO create an explicit excluded office list in settings - ex. ABS KS WCT
-        if (officeCode.contains("CFC") || officeCode.contains("AYS ")) {
+        // TODO create an explicit excluded office list in settings - ex. ABS KS WCT
+        if (isExcludedOffice(officeCode)) {
             return;
         }
 
         Office office;
         // if database already contains office, only add billable history
         // else create a new office
-        if (Database.getInstance().containsOffice(officeCode)) {
-            office = ReadData.readOffice(officeCode);
+        if (officeList.contains(officeCode)) {
+            office = ReadData.readIndividualOffice(new Office(officeCode));
             addBillableHourHistoryToOffice(office, splitLine);
-            WriteData.writeOffice(office);
+            WriteData.saveOffice(office);
             return;
         }
 
@@ -81,6 +75,7 @@ public class DataImport {
         office.setOfficeOwnerEmail(splitLine[3].trim());
         office.setOfficePrimaryContactPerson(splitLine[2].trim());
         office.setOfficePrimaryContactEmail(splitLine[3].trim());
+        office.setOfficePrimaryContactPhone(splitLine[4].trim());
         try {
             office.setExecAgreementDate(LocalDate.parse(splitLine[7], formatter));
         } catch (DateTimeParseException e) {
@@ -89,15 +84,53 @@ public class DataImport {
 
         // add billable hour history
         addBillableHourHistoryToOffice(office, splitLine);
-        WriteData.writeOffice(office);
+        officeList.add(office);
+        WriteData.saveOffice(office);
     }
 
-    public static void addBillableHourHistoryToOffice(Office office, String[] splitLine) {
+    private static void addBillableHourHistoryToOffice(Office office, String[] splitLine) {
         YearMonth month = YearMonth.now();
         for (int i = 11; i < 18; i++) {
             office.addBillableHourHistory(month, Double.parseDouble(splitLine[i]));
             month = month.minusMonths(1);
         }
+    }
+
+    private static boolean isExcludedOffice(String officeCode) {
+        if (officeCode.contains("CFC ") || officeCode.contains("AYS ")) {
+            return true;
+        }
+        if (officeCode.contains("DEMO")) {
+            return true;
+        }
+        if (officeCode.equals("DEV")) {
+            return true;
+        }
+        if (officeCode.contains("DEV BC VAN")) {
+            return true;
+        }
+        if (officeCode.contains("DEV FL JAX")) {
+            return true;
+        }
+        if (officeCode.contains("DEV GB LIV")) {
+            return true;
+        }
+        if (officeCode.contains("DEV KS WCT")) {
+            return true;
+        }
+        if (officeCode.contains("DEV OH CLB")) {
+            return true;
+        }
+        if (officeCode.contains("SWYFTOPS")) {
+            return true;
+        }
+        if (officeCode.contains("CORPO")) {
+            return true;
+        }
+        if (officeCode.contains("SUB TRAINING")) {
+            return true;
+        }
+        return false;
     }
 
 

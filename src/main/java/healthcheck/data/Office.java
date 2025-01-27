@@ -1,32 +1,26 @@
 package healthcheck.data;
 
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.WriteResult;
-import com.google.cloud.firestore.annotation.DocumentId;
-import healthcheck.Main;
-import org.threeten.bp.DateTimeUtils;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
+import java.util.List;
 
 public class Office {
 
     private String officeCode;
     private String officeName = "";
-    private LocalDate lastHealthCheckDate = null;
     private LocalDate execAgreementDate = null;
     private String officeOwner = "";
     private String officeOwnerEmail = "";
     private String officePrimaryContactPerson = "";
     private String officePrimaryContactEmail = "";
+    private String officePrimaryContactPhone = "";
     private String leadershipNotes = "";
     private String generalNotes = "";
+    private String contactNotes = "";
+    private boolean activeOffice = true;
     private int trainingStatus = 0;
     private HashMap<String, Double> billableHourHistory;
 
@@ -61,8 +55,43 @@ public class Office {
         billableHourHistory.put(yearMonth.toString(), hourCount);
     }
 
+    public ArrayList<String> getSortedBillableHourHistoryList() {
+        // Convert the keySet to a list
+        ArrayList<String> keys = new ArrayList<>(billableHourHistory.keySet());
+
+        // Sort the keys by converting to YearMonth and comparing
+        keys.sort((k1, k2) -> YearMonth.parse(k2).compareTo(YearMonth.parse(k1)));
+
+        // Return the sorted list
+        return keys;
+    }
+
     // getters and setters
 
+
+    public String getContactNotes() {
+        return contactNotes;
+    }
+
+    public void setContactNotes(String contactNotes) {
+        this.contactNotes = contactNotes;
+    }
+
+    public boolean isActiveOffice() {
+        return activeOffice;
+    }
+
+    public void setActiveOffice(boolean activeOffice) {
+        this.activeOffice = activeOffice;
+    }
+
+    public String getOfficePrimaryContactPhone() {
+        return officePrimaryContactPhone;
+    }
+
+    public void setOfficePrimaryContactPhone(String officePrimaryContactPhone) {
+        this.officePrimaryContactPhone = officePrimaryContactPhone;
+    }
 
     public String getOfficeCode() {
         return officeCode;
@@ -78,20 +107,6 @@ public class Office {
 
     public void setOfficeName(String officeName) {
         this.officeName = officeName;
-    }
-
-    public LocalDate getLastHealthCheckDate() {
-        return lastHealthCheckDate;
-    }
-
-    public void setLastHealthCheckDate(LocalDate lastHealthCheckDate) {
-        this.lastHealthCheckDate = lastHealthCheckDate;
-    }
-
-    public void setLastHealthCheckDate(String lastHealthCheckDate) {
-        if (lastHealthCheckDate != null) {
-            this.lastHealthCheckDate = LocalDate.parse(lastHealthCheckDate);
-        }
     }
 
     public LocalDate getExecAgreementDate() {

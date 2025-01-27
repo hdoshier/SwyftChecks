@@ -3,11 +3,18 @@ package healthcheck.data.customlists;
 import healthcheck.data.Office;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 
 public class OfficeList implements Iterable<Office>, Iterator<Office> {
     private ArrayList<Office> list;
     private int currentIndex; // Track the current position
+
+    public OfficeList(ArrayList<Office> offices) {
+        this.list = offices;
+        sort();
+        this.currentIndex = 0; // Initialize the index
+    }
 
     public OfficeList(int initialCapacity) {
         this.list = new ArrayList<>(initialCapacity);
@@ -19,6 +26,10 @@ public class OfficeList implements Iterable<Office>, Iterator<Office> {
         this.currentIndex = 0; // Initialize the index
     }
 
+    public int size() {
+        return list.size();
+    }
+
     public boolean contains (String office) {
         for (Office i : list) {
             if (i.getOfficeCode().equals(office)) {
@@ -26,6 +37,10 @@ public class OfficeList implements Iterable<Office>, Iterator<Office> {
             }
         }
         return false;
+    }
+
+    public ArrayList<Office> getList() {
+        return list;
     }
 
     public boolean contains (Office office) {
@@ -45,6 +60,12 @@ public class OfficeList implements Iterable<Office>, Iterator<Office> {
 
     public void add (Office office) {
         list.add(office);
+        sort();
+    }
+
+    public void addAll (ArrayList<Office> offices) {
+        list.addAll(offices);
+        sort();
     }
 
     public boolean remove (Office office) {
@@ -64,6 +85,10 @@ public class OfficeList implements Iterable<Office>, Iterator<Office> {
         } else {
             return false;
         }
+    }
+
+    private void sort() {
+        list.sort(Comparator.comparing(Office::getOfficeCode));
     }
 
 

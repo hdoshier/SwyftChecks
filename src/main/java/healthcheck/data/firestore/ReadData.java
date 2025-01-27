@@ -6,29 +6,11 @@ import healthcheck.data.Office;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class ReadData {
 
-    public static ArrayList<Office> getOfficeList() {
-        Firestore firestore = Database.getFirestore();
-        // get collection from db
-        ApiFuture<QuerySnapshot> query = firestore.collection("offices").get();
 
-        try {
-            QuerySnapshot querySnapshot = query.get();
-            ArrayList<Office> list = new ArrayList<>(querySnapshot.size());
-            for (QueryDocumentSnapshot document : querySnapshot) {
-                list.add(ReadData.readOffice(document));
-            }
-            return list;
-        }catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>(1);
-        }
-    }
 
     public static DocumentSnapshot getSettingsDocument() {
         Firestore firestore = Database.getFirestore();
@@ -43,17 +25,6 @@ public class ReadData {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public static HashSet<String> getExcludedOfficeSet(DocumentSnapshot document) {
-        Object dbList = document.get("excludedOffices");
-
-        @SuppressWarnings("unchecked")
-        ArrayList<String> list = (ArrayList<String>) dbList;
-        if (list == null) {
-            return new HashSet<>();
-        }
-        return new HashSet<>(list);
     }
 
     public static ArrayList<String> getUsers(DocumentSnapshot document) {
@@ -78,15 +49,36 @@ public class ReadData {
         return map;
     }
 
+    // OFFICES IMPORT
 
-    public static Office readOffice(QueryDocumentSnapshot document) {
-        return officeDataToRead(document.getId(), document);
+    public static ArrayList<Office> getActiveOfficeList() {
+        Firestore firestore = Database.getFirestore();
+        // get collection from db
+        ApiFuture<QuerySnapshot> query = firestore.collection("offices").get();
+
+        try {
+            QuerySnapshot querySnapshot = query.get();
+            ArrayList<Office> list = new ArrayList<>(querySnapshot.size());
+            for (QueryDocumentSnapshot document : querySnapshot) {
+                list.add(createOfficeFromData(document.getId(), document));
+            }
+            return list;
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>(1);
+        }
     }
 
 
-    public static Office readOffice(String officeCode) {
+    public static Office readIndividualOffice(Office office) {
+        String officeCode = office.getOfficeCode();
+        DocumentReference document;
         Firestore db = Database.getFirestore();
-        DocumentReference document = db.collection("offices").document(officeCode);
+        if (office.isActiveOffice()) {
+            document = db.collection("offices").document(officeCode);
+        } else {
+            document = db.collection("inactiveOffices").document(officeCode);
+        }
 
         try {
             // Get the document snapshot
@@ -97,7 +89,7 @@ public class ReadData {
                 return null;
             }
 
-            return officeDataToRead(officeCode, documentSnapshot);
+            return createOfficeFromData(officeCode, documentSnapshot);
 
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
@@ -106,7 +98,26 @@ public class ReadData {
     }
 
 
-    private static Office officeDataToRead(String officeCode, DocumentSnapshot document) {
+    public static ArrayList<Office> getInactiveOfficeList() {
+        Firestore firestore = Database.getFirestore();
+        // get collection from db
+        ApiFuture<QuerySnapshot> query = firestore.collection("inactiveOffices").get();
+
+        try {
+            QuerySnapshot querySnapshot = query.get();
+            ArrayList<Office> list = new ArrayList<>(querySnapshot.size());
+            for (QueryDocumentSnapshot document : querySnapshot) {
+                list.add(createOfficeFromData(document.getId(), document));
+            }
+            return list;
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>(1);
+        }
+    }
+
+
+    private static Office createOfficeFromData(String officeCode, DocumentSnapshot document) {
         if (!document.exists()) {
             return null;
         }
@@ -115,14 +126,16 @@ public class ReadData {
         // Map data to the Office object
 
         office.setOfficeName(document.getString("officeName"));
-        office.setLastHealthCheckDate(document.getString("lastHealthCheckDate"));
         office.setExecAgreementDate(document.getString("execAgreementDate"));
         office.setOfficeOwner(document.getString("officeOwner"));
         office.setOfficeOwnerEmail(document.getString("officeOwnerEmail"));
         office.setOfficePrimaryContactPerson(document.getString("officePrimaryContactPerson"));
         office.setOfficePrimaryContactEmail(document.getString("officePrimaryContactEmail"));
+        office.setOfficePrimaryContactPhone(document.getString("officePrimaryContactPhone"));
         office.setLeadershipNotes(document.getString("leadershipNotes"));
         office.setGeneralNotes(document.getString("generalNotes"));
+        office.setContactNotes(document.getString("contactNotes"));
+        office.setActiveOffice(document.getBoolean("activeOffice"));
         Long status = document.getLong("trainingStatus");
         if (status != null) {
             office.setTrainingStatus(Math.toIntExact(status));

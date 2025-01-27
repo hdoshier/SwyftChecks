@@ -1,10 +1,9 @@
-package healthcheck.gui.mainpanels.offices;
+package healthcheck.gui.mainpanels.healthchecks;
 
+import healthcheck.data.HealthCheck;
+import healthcheck.data.HealthCheckPeriod;
 import healthcheck.data.Office;
 import healthcheck.data.firestore.Database;
-import healthcheck.data.firestore.ReadData;
-import healthcheck.gui.MainWindow;
-import healthcheck.gui.dialogs.OfficeGlobalSetDialog;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -14,19 +13,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-/**
- *The ExpensePanel gui class.
- *
- *<p>This class creates the panel that manages Expenses.
- *
- *@author Hunter Doshier hunterdoshier@ksu.edu
- *
- *@version 0.1
- */
-public class OfficeListPanel extends JPanel implements ActionListener {
-    MainWindow parent;
+public class HealthCheckPeriodListPanelNew extends JPanel implements ActionListener {
+    private HealthCheckPeriodPanel parent;
+    private HealthCheckPeriod period;
     GridBagConstraints mainGbc;
     JPanel searchPanel;
     JPanel managePanel;
@@ -34,17 +24,13 @@ public class OfficeListPanel extends JPanel implements ActionListener {
     JTable officeTable;
     JTextField nameSearchField;
     JComboBox<String> statusSearch;
-    ArrayList<Office> officeList;
+    ArrayList<HealthCheck> healthCheckList;
     int officeIndex = -1;
 
-    /**
-     *Constructs the panel.
-     *
-     *@param parent is the parent window.
-     *
-     */
-    public OfficeListPanel(MainWindow parent) {
+
+    public HealthCheckPeriodListPanelNew(HealthCheckPeriodPanel parent, HealthCheckPeriod period) {
         this.parent = parent;
+        this.period = period;
         this.setLayout(new GridBagLayout());
 
         mainGbc = new GridBagConstraints();
@@ -122,6 +108,25 @@ public class OfficeListPanel extends JPanel implements ActionListener {
         this.add(searchPanel, mainGbc);
     }
 
+    private void filterOfficeList() {
+        String nameFilter = nameSearchField.getText().toUpperCase();
+        int activeStatus =  statusSearch.getSelectedIndex();
+
+        // Loads inactive offices from the firestore DB.
+        if (activeStatus != 0) {
+            Database.getInstance().loadInactiveOffices();
+        }
+
+        //healthCheckList = new ArrayList<>();
+        healthCheckList = period.getHealthCheckList();
+        /*
+        for (HealthCheck i : period.getHealthCheckList()) {
+            // TODO filter based on search criteria
+        }
+
+         */
+    }
+
     private void buildManagePanel() {
         managePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         managePanel.setBackground(new Color(248, 248, 248));
@@ -140,100 +145,17 @@ public class OfficeListPanel extends JPanel implements ActionListener {
         this.add(managePanel, mainGbc);
     }
 
-    private void filterOfficeList() {
-        String nameFilter = nameSearchField.getText().toUpperCase();
-        int activeStatus =  statusSearch.getSelectedIndex();
-
-        // Loads inactive offices from the firestore DB.
-        if (activeStatus != 0) {
-            Database.getInstance().loadInactiveOffices();
-        }
-
-        officeList = new ArrayList<>();
-        for (Office i : Database.getInstance().getOfficeList()) {
-            // checks status
-            if (!satisfiesStatusCheck(i.isActiveOffice(), activeStatus)) {
-                continue;
-            }
-            // name/code match
-            if (i.getOfficeCode().contains(nameFilter)) {
-                officeList.add(i);
-                continue;
-            }
-            if (i.getOfficeName().toUpperCase().contains(nameFilter)) {
-                officeList.add(i);
-            }
-        }
-    }
-
-    private boolean satisfiesStatusCheck (boolean isOfficeActive, int statusSelected) {
-        if (statusSelected == 2) {
-            return true;
-        }
-        if (isOfficeActive && statusSelected == 0) {
-            return true;
-        }
-        if (!isOfficeActive && statusSelected == 1) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private void loadOffice(int selectedOffice) {
-        Office office = officeList.get(selectedOffice);
-        parent.loadPanel(new OfficePanel
-                (parent,this, ReadData.readIndividualOffice(office)));
-    }
-
-    public void loadNextOffice() {
-        int index = officeIndex + 1;
-        if (index < 0 || index >= officeList.size()) {
-            return;
-        }
-        loadOffice(index);
-    }
-
-    public void loadPreviousOffice() {
-        int index = officeIndex - 1;
-        if (index < 0 || index >= officeList.size()) {
-            return;
-        }
-        loadOffice(index);
-    }
-
-    // ACTION PERFORMED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String actionCommand = e.getActionCommand();
-        System.out.println(actionCommand);
-        if (actionCommand.equals("search")) {
-            buildOfficeListTable();
-        }
-        if (actionCommand.equals("reset")) {
-            nameSearchField.setText("");
-            statusSearch.setSelectedIndex(0);
-            buildOfficeListTable();
-        }
-        if (actionCommand.equals("globalSet")) {
-            // Pausing Development until I have a better idea of what to add.
-            OfficeGlobalSetDialog diag = new OfficeGlobalSetDialog(parent, this);
-            //diag.run();
-        }
-        System.out.println(Arrays.toString(officeTable.getSelectedRows()));
-    }
-
     private void buildOfficeListTable() {
         // Create table with a custom model
-        OfficeTableModel tableModel = new OfficeTableModel();
+        HealthCheckPeriodListPanelNew.OfficeTableModel tableModel = new HealthCheckPeriodListPanelNew.OfficeTableModel();
         officeTable = new JTable(tableModel);
         officeTable.setRowHeight(25);
 
 
         // Customize button column
         TableColumn buttonColumn = officeTable.getColumnModel().getColumn(0);
-        buttonColumn.setCellRenderer(new ButtonRenderer());
-        buttonColumn.setCellEditor(new ButtonEditor(new JCheckBox(), this));
+        buttonColumn.setCellRenderer(new HealthCheckPeriodListPanelNew.ButtonRenderer());
+        buttonColumn.setCellEditor(new HealthCheckPeriodListPanelNew.ButtonEditor(new JCheckBox(), this));
 
         // Adjust the width of the button column
         buttonColumn.setPreferredWidth(2); // Set the preferred width for column 0
@@ -247,14 +169,43 @@ public class OfficeListPanel extends JPanel implements ActionListener {
 
         // Populate table with office data
         filterOfficeList();
-        for (Office office : officeList) {
-            tableModel.addOffice(office);
+        for (HealthCheck check : healthCheckList) {
+            tableModel.addHealthCheck(check);
         }
 
         // Add the scroll pane to the panel
         this.add(officePane, mainGbc);
         this.revalidate();
         this.repaint();
+    }
+
+    private void loadHealthCheck(int selectedOffice) {
+        HealthCheck check = healthCheckList.get(selectedOffice);
+        parent.setContentPanel(new HealthCheckPanel (this, check));
+    }
+
+    public void loadNextHealthCheck() {
+        int index = officeIndex + 1;
+        if (index < 0 || index >= healthCheckList.size()) {
+            return;
+        }
+        loadHealthCheck(index);
+    }
+
+    public void loadPreviousHealthCheck() {
+        int index = officeIndex - 1;
+        if (index < 0 || index >= healthCheckList.size()) {
+            return;
+        }
+        loadHealthCheck(index);
+    }
+
+
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String actionCommand = e.getActionCommand();
+        System.out.println(actionCommand);
     }
 
     // TABLE CONFIGURATION CLASSES !!
@@ -284,10 +235,10 @@ public class OfficeListPanel extends JPanel implements ActionListener {
     static class ButtonEditor extends DefaultCellEditor {
         private final JButton button;
         private boolean isPushed;
-        private final OfficeListPanel parentPanel; // Reference to the parent panel
+        private final HealthCheckPeriodListPanelNew parentPanel; // Reference to the parent panel
         private int currentRow; // Store the row number
 
-        public ButtonEditor(JCheckBox checkBox, OfficeListPanel parentPanel) {
+        public ButtonEditor(JCheckBox checkBox, HealthCheckPeriodListPanelNew parentPanel) {
             super(checkBox);
             this.parentPanel = parentPanel;
             button = new JButton();
@@ -308,7 +259,7 @@ public class OfficeListPanel extends JPanel implements ActionListener {
         public Object getCellEditorValue() {
             if (isPushed) {
                 // Use the currentRow to load the office
-                parentPanel.loadOffice(currentRow);
+                parentPanel.loadHealthCheck(currentRow);
             }
             isPushed = false;
             return button.getText();
@@ -317,7 +268,7 @@ public class OfficeListPanel extends JPanel implements ActionListener {
 
     // Custom TableModel
     static class OfficeTableModel extends AbstractTableModel {
-        private final String[] columnNames = {"", "Office Code", "Office Name", "Contact Name", "Contact Email"};
+        private final String[] columnNames = {"", "Office Code", "Office Name", "Status", "Assigned To"};
         private final ArrayList<Object[]> data = new ArrayList<>();
 
         @Override
@@ -351,8 +302,21 @@ public class OfficeListPanel extends JPanel implements ActionListener {
             return column == 0; // allows the button to be clicked
         }
 
-        public void addOffice(Office office) {
-            data.add(new Object[]{"Edit", office.getOfficeCode(), office.getOfficeName(), office.getOfficePrimaryContactPerson(), office.getOfficePrimaryContactEmail()});
+        public void addHealthCheck(HealthCheck check) {
+            Office office = check.getOffice();
+            int status = check.getHealthCheckStatus();
+            String statusString;
+            // {"Unassigned", "Pending", "Reviewed", "Completed"}
+            if (status == 0) {
+                statusString = "Unassigned";
+            } else if (status == 1) {
+                statusString = "Pending";
+            } else if (status == 2) {
+                statusString = "Reviewed";
+            } else  {
+                statusString = "Completed";
+            }
+            data.add(new Object[]{"Edit", office.getOfficeCode(), office.getOfficeName(), statusString, check.getAssignedTo()});
             fireTableRowsInserted(data.size() - 1, data.size() - 1);
         }
     }

@@ -11,11 +11,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-public class HealthCheckPeriodListPanel extends JPanel implements ActionListener {
+public class HealthCheckPeriodListPanelOld extends JPanel implements ActionListener {
     private HealthCheckPeriodPanel parent;
     private HealthCheckPeriod period;
 
-    public HealthCheckPeriodListPanel(HealthCheckPeriodPanel parent, HealthCheckPeriod period) {
+    public HealthCheckPeriodListPanelOld(HealthCheckPeriodPanel parent, HealthCheckPeriod period) {
         this.parent = parent;
         this.period = period;
         this.setLayout(new GridBagLayout());
@@ -123,7 +123,6 @@ public class HealthCheckPeriodListPanel extends JPanel implements ActionListener
         // checkbox
         gbc.gridx = 0;
         JCheckBox globalBox = new JCheckBox();
-        // TODO map {officeCode, checkbox} to track changes
         panel.add(globalBox, gbc);
 
         // edit button
@@ -145,7 +144,7 @@ public class HealthCheckPeriodListPanel extends JPanel implements ActionListener
     }
 
     private void openHealthCheckPanel(HealthCheck check) {
-        parent.setContentPanel(new HealthCheckPanel(this, check));
+        //parent.setContentPanel(new HealthCheckPanel(this, check));
     }
 
     public void openOfficePanel(Office office) {

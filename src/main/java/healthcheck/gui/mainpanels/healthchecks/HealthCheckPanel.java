@@ -6,7 +6,6 @@ import healthcheck.data.HealthCheck;
 import healthcheck.data.MySettings;
 import healthcheck.data.Office;
 import healthcheck.data.firestore.ReadData;
-import healthcheck.gui.MainWindow;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,15 +19,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static com.sun.java.accessibility.util.AWTEventMonitor.addActionListener;
-
 public class HealthCheckPanel extends JPanel implements ActionListener {
     private HealthCheck check;
     private JTextField subjectTextField;
     private JTextArea bodyArea;
     private JTextField contactEmail;
     private JTextField contactName;
-    private HealthCheckPeriodListPanel parent;
+    private HealthCheckPeriodListPanelNew parent;
     private JLabel healthCheckStatusLabel = null;
     private JComboBox<String> emailTemplateBox;
 
@@ -48,7 +45,7 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
     private JTextArea generalNotesArea;
     private JTextArea contactReasonField;
 
-    public HealthCheckPanel(HealthCheckPeriodListPanel parent, HealthCheck check) {
+    public HealthCheckPanel(HealthCheckPeriodListPanelNew parent, HealthCheck check) {
         this.parent = parent;
         this.check = check;
         this.setLayout(new GridBagLayout());
@@ -218,7 +215,7 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                parent.openOfficePanel(ReadData.readOffice(office.getOfficeCode()));
+                //parent.openOfficePanel(ReadData.readIndividualOffice(office));
             }
         });
         codePanel.add(codeLabel);
