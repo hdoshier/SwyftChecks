@@ -1,6 +1,7 @@
 package healthcheck.gui;
 
-import healthcheck.gui.mainpanels.healthchecks.HealthCheckHostPanel;
+import healthcheck.data.MyGlobalVariables;
+import healthcheck.gui.mainpanels.healthchecks.HealthCheckListPanel;
 import healthcheck.gui.mainpanels.offices.OfficeListPanel;
 import healthcheck.gui.mainpanels.settings.SettingsHostPanel;
 
@@ -32,11 +33,11 @@ public class NavigationPanel extends JPanel {
         this.parent = parent;
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.setBorder(BorderFactory.createLineBorder(Color.black));
-        this.setBackground(new Color(0, 122, 178));
+        this.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
 
         // Create navigation panel
         JPanel navigationPanel = new JPanel();
-        navigationPanel.setBackground(new Color(0, 122, 178)); // Base color
+        navigationPanel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE); // Base color
         navigationPanel.setLayout(new BoxLayout(navigationPanel, BoxLayout.Y_AXIS));
 
         // Add menu items
@@ -53,7 +54,7 @@ public class NavigationPanel extends JPanel {
     private void addNavItem(JPanel panel, String name, boolean isActive) {
         JLabel navItem = new JLabel(name);
         navItem.setOpaque(true);
-        navItem.setBackground(isActive ? new Color(255, 151, 25) : new Color(0, 122, 178));
+        navItem.setBackground(isActive ? MyGlobalVariables.SWYFTOPS_ORANGE : MyGlobalVariables.SWYFTOPS_BLUE);
         navItem.setForeground(Color.WHITE);
         navItem.setFont(new Font("Arial", Font.PLAIN, 16));
         navItem.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 10));
@@ -67,20 +68,20 @@ public class NavigationPanel extends JPanel {
         navItem.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                navItem.setBackground(new Color(255, 151, 25));
+                navItem.setBackground(MyGlobalVariables.SWYFTOPS_ORANGE);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                if (activeLabel != navItem) navItem.setBackground(new Color(0, 122, 178));
+                if (activeLabel != navItem) navItem.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
             }
 
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                activeLabel.setBackground(new Color(0, 122, 178));
+                activeLabel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
                 activeLabel = navItem;
-                activeLabel.setBackground(new Color(255, 151, 25));
+                activeLabel.setBackground(MyGlobalVariables.SWYFTOPS_ORANGE);
                 System.out.println(name + " clicked");
                 actionPerformed(name);
 
@@ -101,7 +102,7 @@ public class NavigationPanel extends JPanel {
             parent.loadPanel(new OfficeListPanel(parent));
         }
         if ("Health Checks".equals(action)) {
-            parent.loadPanel(new HealthCheckHostPanel(parent));
+            parent.loadPanel(new HealthCheckListPanel(parent));
         }
         if ("Reports".equals(action)) {
             //parent.loadPanel(new MonthlyPanel(parent));

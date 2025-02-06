@@ -1,5 +1,6 @@
 package healthcheck.gui.mainpanels.offices;
 
+import healthcheck.data.MyGlobalVariables;
 import healthcheck.data.Office;
 import healthcheck.data.firestore.Database;
 import healthcheck.data.firestore.WriteData;
@@ -12,7 +13,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 
 import com.github.lgooddatepicker.components.DatePicker;
@@ -29,7 +29,6 @@ import com.github.lgooddatepicker.components.DatePicker;
 public class OfficePanel extends JPanel implements ActionListener {
     MainWindow mainWindow;
     OfficeListPanel officeListPanel;
-    JPanel otherParentPanel;
     Office office;
     JPanel hostPanel;
     private DatePicker execAgreementDateField;
@@ -79,21 +78,21 @@ public class OfficePanel extends JPanel implements ActionListener {
 
     private JPanel buildNavPanel() {
         JPanel navPanel = new JPanel();
-        navPanel.setBackground(new Color(0, 122, 178)); // Base color
+        navPanel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE); // Base color
         navPanel.setLayout(new GridBagLayout());
         navPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
         GridBagConstraints navGbc = new GridBagConstraints();
         JPanel navOptionsPanel = new JPanel();
         navOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        navOptionsPanel.setBackground(new Color(0, 122, 178));
+        navOptionsPanel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
 
         // have next and prev buttons to the far left
         navGbc.gridx = 0;
         // switch office panel config
         JPanel buttonPanel = new JPanel();
         navOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        buttonPanel.setBackground(new Color(0, 122, 178));
+        buttonPanel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
         JButton prevButton = new JButton("Prev");
         prevButton.setActionCommand("prev");
         prevButton.addActionListener(this);
@@ -120,7 +119,7 @@ public class OfficePanel extends JPanel implements ActionListener {
         // save panel config
         buttonPanel = new JPanel();
         navOptionsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.setBackground(new Color(0, 122, 178));
+        buttonPanel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
         JButton saveButton = new JButton("Save");
         saveButton.setActionCommand("save");
         saveButton.addActionListener(this);
@@ -137,7 +136,7 @@ public class OfficePanel extends JPanel implements ActionListener {
     private void addNavItem(JPanel panel, String name, boolean isActive){
         JLabel navItem = new JLabel(name);
         navItem.setOpaque(true);
-        navItem.setBackground(isActive ? new Color(255, 151, 25) : new Color(0, 122, 178)); // Highlight active
+        navItem.setBackground(isActive ? MyGlobalVariables.SWYFTOPS_ORANGE : MyGlobalVariables.SWYFTOPS_BLUE); // Highlight active
         navItem.setForeground(Color.WHITE);
         navItem.setFont(new Font("Arial", Font.PLAIN, 16));
         navItem.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 10)); // Padding
@@ -147,12 +146,12 @@ public class OfficePanel extends JPanel implements ActionListener {
         navItem.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                navItem.setBackground(new Color(255, 151, 25));
+                navItem.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                if (!isActive) navItem.setBackground(new Color(0, 122, 178));
+                if (!isActive) navItem.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
             }
 
             @Override
@@ -220,9 +219,7 @@ public class OfficePanel extends JPanel implements ActionListener {
         dataPanel = new JPanel();
         dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
         dataPanel.add(new JLabel("Training Status"));
-        String[] arr =
-                {"Hasn't Begun Training", "Session 1 Completed", "Session 2 Completed", "Session 3 Completed", "Training Completed"};
-        trainingStatusComboBox = new JComboBox<>(arr);
+        trainingStatusComboBox = new JComboBox<>(MyGlobalVariables.OFFICE_TRAINING_STATUS_ARRAY);
         trainingStatusComboBox.setSelectedIndex(office.getTrainingStatus());
         dataPanel.add(trainingStatusComboBox);
         panel.add(dataPanel, gbc);
@@ -357,7 +354,7 @@ public class OfficePanel extends JPanel implements ActionListener {
 
     private JPanel panelFactory (String header, GridBagConstraints gbc) {
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(0, 122, 178));
+        panel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
         panel.setBorder(BorderFactory.createLineBorder(Color.black));
         JLabel label = new JLabel(header);
         label.setForeground(Color.WHITE);
@@ -390,7 +387,7 @@ public class OfficePanel extends JPanel implements ActionListener {
             Database db = Database.getInstance();
             // TODO create confirmation dialog
             System.out.println(office.isActiveOffice());
-            db.switchOfficeStatus(office);
+            //db.switchOfficeStatus(office);
             // TODO reload this panel
         }
     }

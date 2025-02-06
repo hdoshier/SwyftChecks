@@ -1,6 +1,9 @@
 package healthcheck;
 
+import com.google.cloud.firestore.Firestore;
+import com.google.gson.Gson;
 import healthcheck.data.DataImport;
+import healthcheck.data.Office;
 import healthcheck.data.firestore.Database;
 import healthcheck.gui.MainWindow;
 import javax.swing.*;
@@ -24,12 +27,11 @@ public class Main {
         //DataImport.importOfficeData(filepath);
 
         //current period
-        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1));
+        //Database.getInstance().addNewHealthCheckPeriod(LocalDate.now().minusMonths(1), LocalDate.now().minusDays(1));
+        Database.getInstance().addNewHealthCheckPeriod(LocalDate.now(), LocalDate.now().plusMonths(1));
 
         runGui();
     }
-
-
 
     public static void runGui() {
         SwingUtilities.invokeLater(new Runnable() {

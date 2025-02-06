@@ -1,9 +1,8 @@
 package healthcheck.gui.mainpanels.healthchecks;
 
-import healthcheck.data.HealthCheck;
-import healthcheck.data.HealthCheckPeriod;
-import healthcheck.data.Office;
+import healthcheck.data.*;
 import healthcheck.data.firestore.Database;
+import healthcheck.gui.MainWindow;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -14,24 +13,32 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-public class HealthCheckPeriodListPanelNew extends JPanel implements ActionListener {
-    private HealthCheckPeriodPanel parent;
+public class HealthCheckListPanel extends JPanel implements ActionListener {
+    private MainWindow parent;
     private HealthCheckPeriod period;
+    private ArrayList<HealthCheck> healthCheckList;
+    private Database db;
+    private int currentHealthCheckIndex = -1;
     GridBagConstraints mainGbc;
     JPanel searchPanel;
     JPanel managePanel;
     JScrollPane officePane;
     JTable officeTable;
-    JTextField nameSearchField;
-    JComboBox<String> statusSearch;
-    ArrayList<HealthCheck> healthCheckList;
-    int officeIndex = -1;
+
+    // search criteria
+    private JComboBox<String> periodSearchField;
+    private JTextField officeNameSearchField;
+    private JComboBox<String> assignedToSearchField;
+    private JComboBox<String> healthCheckStatusSearchField;
+    private JCheckBox flaggedForReviewSearchField;
 
 
-    public HealthCheckPeriodListPanelNew(HealthCheckPeriodPanel parent, HealthCheckPeriod period) {
+    public HealthCheckListPanel(MainWindow parent) {
         this.parent = parent;
-        this.period = period;
         this.setLayout(new GridBagLayout());
+        this.db = Database.getInstance();
+        // defaults to most current period
+        this.period = db.getHealthCheckPeriodList().getFirst();
 
         mainGbc = new GridBagConstraints();
         mainGbc.insets = new Insets(2, 2, 2, 2);
@@ -60,6 +67,7 @@ public class HealthCheckPeriodListPanelNew extends JPanel implements ActionListe
         searchPanel.setLayout(new GridBagLayout());
         searchPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         searchPanel.setBackground(new Color(255, 242, 204));
+        configureSearchCriteriaFields();
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2, 2, 2, 2);
@@ -68,29 +76,29 @@ public class HealthCheckPeriodListPanelNew extends JPanel implements ActionListe
         JLabel searchLabel = new JLabel("Search");
         searchPanel.add(searchLabel, gbc);
 
-        gbc.gridx = 0;
+        // Period combo box
+        int xcord = 0;
+        gbc.gridx = xcord++;
         gbc.gridy = 1;
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel nameLabel = new JLabel("Office Code/Name");
-        nameSearchField = new JTextField();
-        nameSearchField.setPreferredSize(new Dimension(150, 20));
-        panel.add(nameLabel);
-        panel.add(nameSearchField);
+        searchPanel.add(buildSearchFieldHostPanel("Health Check Period", periodSearchField), gbc);
 
-        searchPanel.add(panel, gbc);
+        // office search
+        gbc.gridx = xcord++;
+        searchPanel.add(buildSearchFieldHostPanel("Office Code/Name", officeNameSearchField), gbc);
 
+        // assigned to user combo box
+        gbc.gridx = xcord++;
+        searchPanel.add(buildSearchFieldHostPanel("Assigned To", assignedToSearchField), gbc);
 
-        gbc.gridx = 1;
-        panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        nameLabel = new JLabel("Status");
-        String[] arr = {"Active", "Inactive", "All"};
-        statusSearch = new JComboBox<>(arr);
-        statusSearch.setSelectedIndex(0);
-        panel.add(nameLabel);
-        panel.add(statusSearch);
-        searchPanel.add(panel, gbc);
+        // HC status combo box
+        gbc.gridx = xcord++;
+        searchPanel.add(buildSearchFieldHostPanel("Status", healthCheckStatusSearchField), gbc);
 
-        gbc.gridx = 2;
+        // flagged for review
+        gbc.gridx = xcord++;
+        searchPanel.add(buildSearchFieldHostPanel("Flagged for Review", flaggedForReviewSearchField), gbc);
+
+        gbc.gridx = xcord;
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
         JButton searchButton = new JButton("Search");
@@ -108,24 +116,49 @@ public class HealthCheckPeriodListPanelNew extends JPanel implements ActionListe
         this.add(searchPanel, mainGbc);
     }
 
-    private void filterOfficeList() {
-        String nameFilter = nameSearchField.getText().toUpperCase();
-        int activeStatus =  statusSearch.getSelectedIndex();
-
-        // Loads inactive offices from the firestore DB.
-        if (activeStatus != 0) {
-            Database.getInstance().loadInactiveOffices();
-        }
-
-        //healthCheckList = new ArrayList<>();
-        healthCheckList = period.getHealthCheckList();
-        /*
-        for (HealthCheck i : period.getHealthCheckList()) {
-            // TODO filter based on search criteria
-        }
-
-         */
+    private JPanel buildSearchFieldHostPanel(String labelText, JComponent component) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel label = new JLabel(labelText);
+        panel.add(label);
+        panel.add(component);
+        return panel;
     }
+
+    private void configureSearchCriteriaFields() {
+        officeNameSearchField = new JTextField();
+        officeNameSearchField.setPreferredSize(new Dimension(150, 20));
+
+        // assigned to user search
+        assignedToSearchField = new JComboBox<>();
+        assignedToSearchField.addItem("All");
+        assignedToSearchField.addItem("Unassigned");
+        for (String user : MySettings.getInstance().getUsers()) {
+            assignedToSearchField.addItem(user);
+        }
+        assignedToSearchField.setSelectedIndex(0);
+
+        // period search
+        periodSearchField = new JComboBox<>();
+        for (HealthCheckPeriod i : db.getHealthCheckPeriodList()) {
+            periodSearchField.addItem(i.getPeriodDateRange());
+        }
+        periodSearchField.setSelectedIndex(0);
+
+        // status search
+        healthCheckStatusSearchField = new JComboBox<>();
+        healthCheckStatusSearchField.addItem("All");
+        healthCheckStatusSearchField.addItem("Incomplete");
+        for (String status : MyGlobalVariables.HEALTH_CHECK_STATUS_ARRAY) {
+            healthCheckStatusSearchField.addItem(status);
+        }
+        // set to all by default
+        healthCheckStatusSearchField.setSelectedIndex(0);
+
+        // flagged for review
+        flaggedForReviewSearchField = new JCheckBox();
+        flaggedForReviewSearchField.setSelected(false);
+    }
+
 
     private void buildManagePanel() {
         managePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -145,17 +178,17 @@ public class HealthCheckPeriodListPanelNew extends JPanel implements ActionListe
         this.add(managePanel, mainGbc);
     }
 
-    private void buildOfficeListTable() {
+    public void buildOfficeListTable() {
         // Create table with a custom model
-        HealthCheckPeriodListPanelNew.OfficeTableModel tableModel = new HealthCheckPeriodListPanelNew.OfficeTableModel();
+        HealthCheckListPanel.OfficeTableModel tableModel = new HealthCheckListPanel.OfficeTableModel();
         officeTable = new JTable(tableModel);
         officeTable.setRowHeight(25);
 
 
         // Customize button column
         TableColumn buttonColumn = officeTable.getColumnModel().getColumn(0);
-        buttonColumn.setCellRenderer(new HealthCheckPeriodListPanelNew.ButtonRenderer());
-        buttonColumn.setCellEditor(new HealthCheckPeriodListPanelNew.ButtonEditor(new JCheckBox(), this));
+        buttonColumn.setCellRenderer(new HealthCheckListPanel.ButtonRenderer());
+        buttonColumn.setCellEditor(new HealthCheckListPanel.ButtonEditor(new JCheckBox(), this));
 
         // Adjust the width of the button column
         buttonColumn.setPreferredWidth(2); // Set the preferred width for column 0
@@ -168,7 +201,7 @@ public class HealthCheckPeriodListPanelNew extends JPanel implements ActionListe
         officePane = new JScrollPane(officeTable);
 
         // Populate table with office data
-        filterOfficeList();
+        filterHealthCheckList();
         for (HealthCheck check : healthCheckList) {
             tableModel.addHealthCheck(check);
         }
@@ -179,13 +212,79 @@ public class HealthCheckPeriodListPanelNew extends JPanel implements ActionListe
         this.repaint();
     }
 
-    private void loadHealthCheck(int selectedOffice) {
-        HealthCheck check = healthCheckList.get(selectedOffice);
-        parent.setContentPanel(new HealthCheckPanel (this, check));
+    private void filterHealthCheckList() {
+        String nameFilter = officeNameSearchField.getText().toUpperCase();
+        String assignedTo = (String) assignedToSearchField.getSelectedItem();
+        String status = (String) healthCheckStatusSearchField.getSelectedItem();
+        boolean flagged = flaggedForReviewSearchField.isSelected();
+
+        period = db.getHealthCheckPeriodList().get(periodSearchField.getSelectedIndex());
+        healthCheckList = new ArrayList<>();
+        for (HealthCheck i : period.getHealthCheckList()) {
+            if (!satisfiesNameCheck(i, nameFilter)) {
+                continue;
+            }
+            if (!satisfiesAssignedToCheck(i, assignedTo)) {
+                continue;
+            }
+            if (!satisfiesStatusCheck(i, status)) {
+                continue;
+            }
+            if (!satisfiesFlagCheck(i, flagged)) {
+                continue;
+            }
+            healthCheckList.add(i);
+        }
+    }
+
+    private boolean satisfiesNameCheck(HealthCheck check, String filter) {
+        if (filter == null) {
+            return true;
+        }
+
+        Office office = check.getOffice();
+        if (office.getOfficeCode().contains(filter) || office.getOfficeName().toUpperCase().contains(filter)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean satisfiesAssignedToCheck(HealthCheck check, String assignedTo) {
+        if (assignedTo.equals("All")) {
+            return true;
+        }
+        return check.getAssignedTo().equals(assignedTo);
+    }
+
+    private boolean satisfiesStatusCheck(HealthCheck check, String status) {
+        if (status.equals("All")) {
+            return true;
+        }
+        String checkStatus = MyGlobalVariables.HEALTH_CHECK_STATUS_ARRAY[check.getHealthCheckStatus()];
+        // TODO figure out how to avoid specifically calling "completed"
+        if (status.equals("Incomplete") && !checkStatus.equals("Completed")) {
+            return true;
+        }
+        return status.equals(checkStatus);
+    }
+
+    private boolean satisfiesFlagCheck(HealthCheck check, boolean flagged) {
+        if (flagged == false) {
+            return true;
+        }
+        return check.isFlagedForLeadershipReview();
+    }
+
+
+    private void loadHealthCheck(int selectedHealthCheck) {
+        HealthCheck check = healthCheckList.get(selectedHealthCheck);
+        currentHealthCheckIndex = selectedHealthCheck;
+        parent.loadPanel(new HealthCheckPanel (parent, this, check));
     }
 
     public void loadNextHealthCheck() {
-        int index = officeIndex + 1;
+        int index = currentHealthCheckIndex + 1;
         if (index < 0 || index >= healthCheckList.size()) {
             return;
         }
@@ -193,7 +292,7 @@ public class HealthCheckPeriodListPanelNew extends JPanel implements ActionListe
     }
 
     public void loadPreviousHealthCheck() {
-        int index = officeIndex - 1;
+        int index = currentHealthCheckIndex - 1;
         if (index < 0 || index >= healthCheckList.size()) {
             return;
         }
@@ -206,6 +305,20 @@ public class HealthCheckPeriodListPanelNew extends JPanel implements ActionListe
     public void actionPerformed(ActionEvent e) {
         String actionCommand = e.getActionCommand();
         System.out.println(actionCommand);
+
+        if (actionCommand.equals("addNew")) {
+
+        }
+        if (actionCommand.equals("globalSet")) {
+
+        }
+        if (actionCommand.equals("search")) {
+            buildOfficeListTable();
+        }
+        if (actionCommand.equals("reset")) {
+            configureSearchCriteriaFields();
+            buildOfficeListTable();
+        }
     }
 
     // TABLE CONFIGURATION CLASSES !!
@@ -235,10 +348,10 @@ public class HealthCheckPeriodListPanelNew extends JPanel implements ActionListe
     static class ButtonEditor extends DefaultCellEditor {
         private final JButton button;
         private boolean isPushed;
-        private final HealthCheckPeriodListPanelNew parentPanel; // Reference to the parent panel
+        private final HealthCheckListPanel parentPanel; // Reference to the parent panel
         private int currentRow; // Store the row number
 
-        public ButtonEditor(JCheckBox checkBox, HealthCheckPeriodListPanelNew parentPanel) {
+        public ButtonEditor(JCheckBox checkBox, HealthCheckListPanel parentPanel) {
             super(checkBox);
             this.parentPanel = parentPanel;
             button = new JButton();
@@ -305,18 +418,7 @@ public class HealthCheckPeriodListPanelNew extends JPanel implements ActionListe
         public void addHealthCheck(HealthCheck check) {
             Office office = check.getOffice();
             int status = check.getHealthCheckStatus();
-            String statusString;
-            // {"Unassigned", "Pending", "Reviewed", "Completed"}
-            if (status == 0) {
-                statusString = "Unassigned";
-            } else if (status == 1) {
-                statusString = "Pending";
-            } else if (status == 2) {
-                statusString = "Reviewed";
-            } else  {
-                statusString = "Completed";
-            }
-            data.add(new Object[]{"Edit", office.getOfficeCode(), office.getOfficeName(), statusString, check.getAssignedTo()});
+            data.add(new Object[]{"Edit", office.getOfficeCode(), office.getOfficeName(), MyGlobalVariables.HEALTH_CHECK_STATUS_ARRAY[status], check.getAssignedTo()});
             fireTableRowsInserted(data.size() - 1, data.size() - 1);
         }
     }

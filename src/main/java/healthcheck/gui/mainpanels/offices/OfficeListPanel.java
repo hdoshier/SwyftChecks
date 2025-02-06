@@ -182,6 +182,8 @@ public class OfficeListPanel extends JPanel implements ActionListener {
 
     private void loadOffice(int selectedOffice) {
         Office office = officeList.get(selectedOffice);
+        officeIndex = selectedOffice;
+        System.out.println("Opening Office: " + office.getOfficeCode());
         parent.loadPanel(new OfficePanel
                 (parent,this, ReadData.readIndividualOffice(office)));
     }
@@ -189,6 +191,7 @@ public class OfficeListPanel extends JPanel implements ActionListener {
     public void loadNextOffice() {
         int index = officeIndex + 1;
         if (index < 0 || index >= officeList.size()) {
+            System.out.println("Invalid Index: " + index);
             return;
         }
         loadOffice(index);
@@ -197,6 +200,7 @@ public class OfficeListPanel extends JPanel implements ActionListener {
     public void loadPreviousOffice() {
         int index = officeIndex - 1;
         if (index < 0 || index >= officeList.size()) {
+            System.out.println("Invalid Index: " + index);
             return;
         }
         loadOffice(index);
@@ -216,8 +220,8 @@ public class OfficeListPanel extends JPanel implements ActionListener {
             buildOfficeListTable();
         }
         if (actionCommand.equals("globalSet")) {
-            // Pausing Development until I have a better idea of what to add.
-            OfficeGlobalSetDialog diag = new OfficeGlobalSetDialog(parent, this);
+            // TODO Pausing Development until I have a better idea of what to add.
+            //OfficeGlobalSetDialog diag = new OfficeGlobalSetDialog(parent, this);
             //diag.run();
         }
         System.out.println(Arrays.toString(officeTable.getSelectedRows()));

@@ -1,5 +1,6 @@
 package healthcheck.gui.mainpanels.settings;
 
+import healthcheck.data.MyGlobalVariables;
 import healthcheck.data.MySettings;
 import healthcheck.gui.MainWindow;
 
@@ -63,22 +64,22 @@ public class SettingsHostPanel extends JPanel {
         label.setFont(new Font("Arial", Font.PLAIN, 16));
         label.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 10)); // Padding
         label.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
-        label.setBackground(activeLabel == label ? new Color(255, 151, 25) : new Color(0, 122, 178));
+        label.setBackground(activeLabel == label ? MyGlobalVariables.SWYFTOPS_ORANGE : MyGlobalVariables.SWYFTOPS_BLUE);
         label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                label.setBackground(new Color(255, 151, 25));
+                label.setBackground(MyGlobalVariables.SWYFTOPS_ORANGE);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                if (activeLabel != label) label.setBackground(new Color(0, 122, 178));
+                if (activeLabel != label) label.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
             }
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                activeLabel.setBackground(new Color(0, 122, 178));
-                label.setBackground(new Color(255, 151, 25));
+                activeLabel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
+                label.setBackground(MyGlobalVariables.SWYFTOPS_ORANGE);
                 activeLabel = label;
                 switchView(label.getText(), label);
             }

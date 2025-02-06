@@ -20,12 +20,12 @@ public class HealthCheck implements Serializable {
     private int clientGeneralSchedulesConfigured = 0;
     private LocalDate lastBillingProcessDate = null;
     private LocalDate lastPayrollProcessDate = null;
+    private LocalDate checkCompletionDate;
     private boolean repeatAdjustments = false;
     private String generalNotes = "";
     private String assignedTo = "Unassigned";
     private String reviewPerformedBy = "";
     private String healthCheckCompletedBy = "";
-    // {"Unassigned", "Pending", "Reviewed", "Completed"}
     private int healthCheckStatus = 0;
     private boolean flagedForLeadershipReview = false;
     private String emailTemplateSent;
@@ -38,6 +38,14 @@ public class HealthCheck implements Serializable {
 
     // getters and setters
 
+
+    public LocalDate getCheckCompletionDate() {
+        return checkCompletionDate;
+    }
+
+    public void setCheckCompletionDate(LocalDate checkCompletionDate) {
+        this.checkCompletionDate = checkCompletionDate;
+    }
 
     public String getEmailTemplateSent() {
         return emailTemplateSent;

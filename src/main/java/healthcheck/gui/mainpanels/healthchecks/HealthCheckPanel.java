@@ -1,11 +1,8 @@
 package healthcheck.gui.mainpanels.healthchecks;
 
 import com.github.lgooddatepicker.components.DatePicker;
-import healthcheck.data.Email;
-import healthcheck.data.HealthCheck;
-import healthcheck.data.MySettings;
-import healthcheck.data.Office;
-import healthcheck.data.firestore.ReadData;
+import healthcheck.data.*;
+import healthcheck.gui.MainWindow;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,15 +18,23 @@ import java.util.HashMap;
 
 public class HealthCheckPanel extends JPanel implements ActionListener {
     private HealthCheck check;
+    private Office office;
+    private MainWindow mainWindow;
     private JTextField subjectTextField;
     private JTextArea bodyArea;
     private JTextField contactEmail;
     private JTextField contactName;
-    private HealthCheckPeriodListPanelNew parent;
+    private HealthCheckListPanel parent;
     private JLabel healthCheckStatusLabel = null;
     private JComboBox<String> emailTemplateBox;
 
+    // manage fields
+    private JComboBox<String> assignedToField;
+    private JComboBox<String> checkStatusField;
+    private DatePicker checkCompletionDateField;
+    private JCheckBox flagForLeadershipCheckBox;
 
+    // health check data fields
     private JSpinner activeClientsField;
     private JSpinner activeCaregiversField;
     private JSpinner expiredLicenseCountField;
@@ -45,16 +50,25 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
     private JTextArea generalNotesArea;
     private JTextArea contactReasonField;
 
-    public HealthCheckPanel(HealthCheckPeriodListPanelNew parent, HealthCheck check) {
+
+    public HealthCheckPanel(MainWindow mainWindow, HealthCheckListPanel parent, HealthCheck check) {
         this.parent = parent;
         this.check = check;
+        this.office = check.getOffice();
+        this.mainWindow = mainWindow;
         this.setLayout(new GridBagLayout());
-        this.setBackground(new Color(0, 122, 178));
+        this.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
         GridBagConstraints mainGbc = new GridBagConstraints();
         mainGbc.insets = new Insets(2, 2, 2, 2);
         mainGbc.fill = GridBagConstraints.BOTH;
+        mainGbc.weightx = 1.0;
+        mainGbc.gridwidth = 2;
+        this.add(createNavPanel(), mainGbc);
+
 
         // manage data
+        mainGbc.gridy = 1;
+        mainGbc.gridwidth = 1;
         mainGbc.weightx = 0.75;
         this.add(createManagePanel(), mainGbc);
 
@@ -64,22 +78,22 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         this.add(createOfficePanel(), mainGbc);
 
         // email info
-        mainGbc.gridy = 1;
+        mainGbc.gridy = 2;
         mainGbc.gridx = 1;
         mainGbc.gridheight = 2;
         mainGbc.weighty = 1.0;
         mainGbc.weightx = 0.25;
-        this.add(createEmailPanel(), mainGbc);
+        this.add(contactOfficePanel(), mainGbc);
 
         // add health check data
-        mainGbc.gridy = 1;
+        mainGbc.gridy = 2;
         mainGbc.gridx = 0;
         mainGbc.weightx = 0.75;
         mainGbc.gridheight = 1;
         this.add(createDataPanel(), mainGbc);
 
         // add billable hour history
-        mainGbc.gridy = 2;
+        mainGbc.gridy = 3;
         mainGbc.gridx = 0;
         mainGbc.weighty = 0;
         mainGbc.gridheight = 1;
@@ -87,14 +101,100 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
 
     }
 
+    private JPanel createNavPanel() {
+        JPanel navPanel = new JPanel();
+        navPanel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE); // Base color
+        navPanel.setLayout(new GridBagLayout());
+
+        GridBagConstraints navGbc = new GridBagConstraints();
+        JPanel navOptionsPanel = new JPanel();
+        navOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        navOptionsPanel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
+
+        // have next and prev buttons to the far left
+        navGbc.gridx = 0;
+        // switch office panel config
+        JPanel buttonPanel = new JPanel();
+        navOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        buttonPanel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
+        JButton prevButton = new JButton("Prev");
+        prevButton.setActionCommand("prev");
+        prevButton.addActionListener(this);
+        buttonPanel.add(prevButton);
+        JButton nextButton = new JButton("Next");
+        nextButton.setActionCommand("next");
+        nextButton.addActionListener(this);
+        buttonPanel.add(nextButton);
+        navPanel.add(buttonPanel, navGbc);
+
+
+
+        //add nav options
+        navGbc.gridx = 1;
+        navGbc.weightx = 1.0;
+        addNavItem(navOptionsPanel, office.getOfficeCode(), false);
+        addNavItem(navOptionsPanel, "Health Check", true);
+        navPanel.add(navOptionsPanel, navGbc);
+
+
+        // have save button be on the far right
+        navGbc.gridx = 2;
+        navGbc.weightx = 0;
+        // save panel config
+        buttonPanel = new JPanel();
+        navOptionsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
+        JButton saveButton = new JButton("Save");
+        saveButton.setActionCommand("save");
+        saveButton.addActionListener(this);
+        buttonPanel.add(saveButton);
+        JButton backButton = new JButton("Back");
+        backButton.setActionCommand("back");
+        backButton.addActionListener(this);
+        buttonPanel.add(backButton);
+        navPanel.add(buttonPanel, navGbc);
+
+        return navPanel;
+    }
+
+    private void addNavItem(JPanel panel, String name, boolean isActive){
+        JLabel navItem = new JLabel(name);
+        navItem.setOpaque(true);
+        navItem.setBackground(isActive ? MyGlobalVariables.SWYFTOPS_ORANGE : MyGlobalVariables.SWYFTOPS_BLUE); // Highlight active
+        navItem.setForeground(Color.WHITE);
+        navItem.setFont(new Font("Arial", Font.PLAIN, 16));
+        navItem.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 10)); // Padding
+        navItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+
+        // Add hover effect
+        navItem.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                navItem.setBackground(MyGlobalVariables.SWYFTOPS_ORANGE);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (!isActive) navItem.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Perform action (switch view, print message, etc.)
+                System.out.println(name + " clicked");
+
+            }
+        });
+
+        panel.add(navItem);
+    }
+
     private JScrollPane createBillableHoursPanel() {
         JPanel scrollPanel = new JPanel();
         JScrollPane scrollPane = new JScrollPane(scrollPanel);
         scrollPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
-        scrollPanel.setBackground(new Color(248, 248, 248));
+        panelFormatter(scrollPanel);
 
-        Office office = check.getOffice();
         YearMonth month = office.getMostRecentBillableHistory();
         HashMap<String, Double> billableMap = office.getBillableHourHistory();
 
@@ -112,17 +212,44 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         return scrollPane;
     }
 
-    private JPanel createEmailPanel() {
-        Office office = check.getOffice();
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
-        panel.setBackground(new Color(248, 248, 248));
-        panel.setBorder(BorderFactory.createLineBorder(Color.black));
+    private JPanel contactOfficePanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panelFormatter(panel);
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(2, 2, 2, 2);
 
+        JPanel officeInfo = new JPanel(new GridBagLayout());
+        GridBagConstraints officeGBC = new GridBagConstraints();
+        officeGBC.fill = GridBagConstraints.BOTH;
+        officeGBC.insets = new Insets(2, 2, 2, 2);
+        int ycord = 0;
+
+
+        //office primary contact name - textfield
+        JPanel contactPanel = new JPanel();
+        contactPanel.setLayout(new BoxLayout(contactPanel, BoxLayout.Y_AXIS));
+        contactPanel.add(new JLabel("Primary Contact Name"));
+        contactName = new JTextField(office.getOfficePrimaryContactPerson());
+        contactPanel.add(contactName);
+        gbc.gridx = 0;
+        gbc.gridy = ycord;
+        panel.add(contactPanel, gbc);
+
+        //office primary contact email - textfield
+        JPanel emailPanel = new JPanel();
+        emailPanel.setLayout(new BoxLayout(emailPanel, BoxLayout.Y_AXIS));
+        emailPanel.add(new JLabel("Primary Contact Email"));
+        contactEmail = new JTextField(office.getOfficePrimaryContactEmail());
+        emailPanel.add(contactEmail);
+        gbc.gridx = 1;
+        gbc.gridy = ycord;
+        panel.add(emailPanel, gbc);
+
+
+
+        gbc.anchor = GridBagConstraints.WEST;
         // template combo box
         JPanel templatePanel = new JPanel();
         templatePanel.setLayout(new BoxLayout(templatePanel, BoxLayout.X_AXIS));
@@ -137,7 +264,8 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         });
         templatePanel.add(emailTemplateBox);
         gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.weightx = 2;
+        gbc.gridy = ycord++;
         panel.add(templatePanel, gbc);
 
         // subject line
@@ -150,8 +278,7 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         subjectPanel.add(new JLabel("Subject Line"));
         subjectTextField = new JTextField(sb.toString());
         subjectPanel.add(subjectTextField);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = ycord++;
         panel.add(subjectPanel, gbc);
 
         // template area
@@ -163,49 +290,40 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         bodyArea.setRows(15);
         bodyArea.setColumns(20);
         bodyPanel.add(bodyArea);
-        gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = ycord++;
         panel.add(bodyPanel, gbc);
 
         // button
         JButton sendEmailBtn = new JButton("Prep Email");
         sendEmailBtn.addActionListener(this);
         sendEmailBtn.setActionCommand("email");
-        gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = ycord++;
         panel.add(sendEmailBtn, gbc);
 
         return panel;
     }
 
-    private String getContactFirstName() {
-        String[] name = contactName.getText().split(" ");
-        return name[0];
-    }
-
     private JPanel createOfficePanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
-        panel.setBackground(new Color(248, 248, 248));
-        panel.setBorder(BorderFactory.createLineBorder(Color.black));
+        panelFormatter(panel);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(2, 2, 2, 2);
 
-        Office office = check.getOffice();
         //office code label
         JPanel codePanel = new JPanel();
         codePanel.setLayout(new BoxLayout(codePanel, BoxLayout.Y_AXIS));
         codePanel.add(new JLabel("Office Code"));
         JLabel codeLabel = new JLabel(office.getOfficeCode());
         codeLabel.setOpaque(true);
-        codeLabel.setForeground(new Color(0, 102, 204));
+        codeLabel.setForeground(MyGlobalVariables.SWYFTOPS_BLUE);
         codeLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
 
-                codeLabel.setBackground(new Color(255, 151, 25));
+                codeLabel.setBackground(MyGlobalVariables.SWYFTOPS_ORANGE); 
             }
 
             @Override
@@ -271,21 +389,12 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         gbc.gridy = 2;
         panel.add(leadershipPanel, gbc);
 
-        // save button
-        JButton saveBtn = new JButton("Save All");
-        saveBtn.addActionListener(this);
-        saveBtn.setActionCommand("save");
-        gbc.gridx = 2;
-        gbc.gridy = 0;
-        panel.add(saveBtn, gbc);
-
         return panel;
     }
 
     private JPanel createDataPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(248, 248, 248));
-        panel.setBorder(BorderFactory.createLineBorder(Color.black));
+        panelFormatter(panel);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.BOTH;
@@ -345,12 +454,15 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         gbc.gridx = 2;
         gbc.gridy = 0;
         shiftsInDifferentStatusesCheckBox = new JCheckBox();
+        shiftsInDifferentStatusesCheckBox.setSelected(check.isShiftsInDifferentStatuses());
         panel.add(dataCollectionPanel("Shifts in Different Statuses", shiftsInDifferentStatusesCheckBox), gbc);
         gbc.gridy = 1;
         caregiversUsingTheAppCheckBox = new JCheckBox();
+        caregiversUsingTheAppCheckBox.setSelected(check.isCaregiversUsingTheApp());
         panel.add(dataCollectionPanel("Caregivers Actively Using the App", caregiversUsingTheAppCheckBox), gbc);
         gbc.gridy = 2;
         repeatAdjustmentsCheckBox = new JCheckBox();
+        repeatAdjustmentsCheckBox.setSelected(check.isRepeatAdjustments());
         panel.add(dataCollectionPanel("Repeat Adjustments being Made", repeatAdjustmentsCheckBox), gbc);
 
         gbc.gridx = 0;
@@ -382,62 +494,65 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
 
     private JPanel createManagePanel() {
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(248, 248, 248));
-        panel.setBorder(BorderFactory.createLineBorder(Color.black));
+        panelFormatter(panel);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(2, 2, 2, 2);
 
-        //row 1
+        //assigned to
         gbc.gridx = 0;
-        ArrayList<String> userList = new ArrayList<>();
-        userList.add("Unassigned");
-        userList.addAll(MySettings.getInstance().getUsers());
-        JComboBox<String> assignedToField = new JComboBox<>(userList.toArray(new String[0]));
+        ArrayList<String> userList = new ArrayList<>(MySettings.getInstance().getUsers());
+        userList.addFirst("Unassigned");
+        assignedToField = new JComboBox<>(userList.toArray(new String[0]));
         assignedToField.setSelectedIndex(userList.indexOf(check.getAssignedTo()));
         assignedToField.addActionListener(e -> {
-            int selectedIndex = assignedToField.getSelectedIndex();
-            if (healthCheckStatusLabel == null) {
-                return;
+            if (assignedToField.getSelectedIndex() > 0) {
+                checkStatusField.setSelectedIndex(1);
+                checkCompletionDateField.setEnabled(true);
+                checkStatusField.setEnabled(true);
+            } else {
+                checkStatusField.setSelectedIndex(0);
+                checkCompletionDateField.setEnabled(false);
+                checkStatusField.setEnabled(false);
             }
-            if (selectedIndex > 1) {
-                healthCheckStatusLabel.setText("Assigned");
-            }
-            if (selectedIndex == 1) {
-                healthCheckStatusLabel.setText("Unassigned");
-            }
-            check.setAssignedTo(assignedToField.getItemAt(selectedIndex));
         });
         panel.add(dataCollectionPanel("Assigned To", assignedToField), gbc);
 
-        userList = new ArrayList<>(MySettings.getInstance().getUsers());
+        // status
         gbc.gridx = 1;
-        JComboBox<String> reviewPerformedByField = new JComboBox<>(userList.toArray(new String[0]));;
-        reviewPerformedByField.setSelectedIndex(userList.indexOf(check.getReviewPerformedBy()));
-        panel.add(dataCollectionPanel("Review Performed By", reviewPerformedByField), gbc);
-        gbc.gridx = 2;
-        JComboBox<String> completedByField = new JComboBox<>(userList.toArray(new String[0]));;
-        completedByField.setSelectedIndex(userList.indexOf(check.getHealthCheckCompletedBy()));
-        panel.add(dataCollectionPanel("Health Check Completed By", completedByField), gbc);
+        checkStatusField = new JComboBox<>(MyGlobalVariables.HEALTH_CHECK_STATUS_ARRAY);
+        checkStatusField.setSelectedIndex(check.getHealthCheckStatus());
+        checkStatusField.addActionListener(e -> {
+            if (checkStatusField.getSelectedItem().equals("Completed")) {
+                checkCompletionDateField.setDate(LocalDate.now());
+            } else {
+                checkCompletionDateField.setDate(null);
+            }
+        });
+        panel.add(dataCollectionPanel("Status", checkStatusField), gbc);
 
-        //row 2
-        gbc.gridy = 1;
-        gbc.gridx = 0;
-        JPanel prevContactReasonPanel = new JPanel();
-        prevContactReasonPanel.setLayout(new BoxLayout(prevContactReasonPanel, BoxLayout.Y_AXIS));
-        prevContactReasonPanel.add(new JLabel("Previous Contact Reason"));
-        prevContactReasonPanel.add(new JLabel(check.getPreviousContactReason()));
-        panel.add(prevContactReasonPanel, gbc);
-        gbc.gridx = 1;
-        String[] statusList = new String[] {"Unassigned", "Pending", "Reviewed", "Completed"};
-        healthCheckStatusLabel = new JLabel(statusList[check.getHealthCheckStatus()]);
-        panel.add(dataCollectionPanel("Health Check Status", healthCheckStatusLabel), gbc);
+        // completion date
         gbc.gridx = 2;
-        JCheckBox flagForLeadershipCheckBox = new JCheckBox();
+        checkCompletionDateField = new DatePicker();
+        checkCompletionDateField.setDate(check.getCheckCompletionDate());
+        checkCompletionDateField.addDateChangeListener(e -> {
+            if (checkCompletionDateField.getDate() != null) {
+                checkStatusField.setSelectedItem("Completed");
+            }
+        });
+        panel.add(dataCollectionPanel("Completed On", checkCompletionDateField), gbc);
+
+        //flag for review
+        gbc.gridx = 3;
+        flagForLeadershipCheckBox = new JCheckBox();
         flagForLeadershipCheckBox.setSelected(check.isFlagedForLeadershipReview());
         panel.add(dataCollectionPanel("Flag for Leadership Review", flagForLeadershipCheckBox), gbc);
 
+        if (assignedToField.getSelectedIndex() == 0) {
+            checkCompletionDateField.setEnabled(false);
+            checkStatusField.setEnabled(false);
+        }
         return panel;
     }
 
@@ -451,10 +566,18 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         check.setRepeatAdjustments(repeatAdjustmentsCheckBox.isSelected());
         check.setGeneralNotes(generalNotesArea.getText());
         check.setContactReason(contactReasonField.getText());
+        check.setFlagedForLeadershipReview(flagForLeadershipCheckBox.isSelected());
+        check.setAssignedTo((String) assignedToField.getSelectedItem());
+        check.setHealthCheckStatus(checkStatusField.getSelectedIndex());
 
         LocalDate date = lastLoginField.getDate();
         if (date != null) {
             check.setLastLogin(date);
+        }
+
+        date = checkCompletionDateField.getDate();
+        if (date != null) {
+            check.setCheckCompletionDate(date);
         }
 
         date = oldestTaskDateField.getDate();
@@ -479,9 +602,17 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         // TODO write to Database
     }
 
+    private void panelFormatter(JPanel panel) {
+        panel.setBackground(new Color(248, 248, 248));
+        panel.setBorder(BorderFactory.createLineBorder(Color.black));
+    }
+
+
+
     @Override
     public void actionPerformed(ActionEvent e) {
         String actionCommand = e.getActionCommand();
+        System.out.println(actionCommand);
         if (actionCommand.equals("email")) {
             // TODO add save validation
 
@@ -499,7 +630,23 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
             Email.prepEmail(getContactFirstName(), contactEmail.getText(), subjectTextField.getText(), body);
         }
         if (actionCommand.equals("save")) {
+            System.out.println(actionCommand);
             saveHealthCheck();
         }
+        if (actionCommand.equals("next")) {
+            parent.loadNextHealthCheck();
+        }
+        if (actionCommand.equals("prev")) {
+            parent.loadPreviousHealthCheck();
+        }
+        if (actionCommand.equals("back")) {
+            parent.buildOfficeListTable();
+            mainWindow.loadPanel(parent);
+        }
+    }
+
+    private String getContactFirstName() {
+        String[] name = contactName.getText().split(" ");
+        return name[0];
     }
 }

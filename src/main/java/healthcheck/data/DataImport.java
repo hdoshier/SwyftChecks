@@ -1,6 +1,5 @@
 package healthcheck.data;
 
-import healthcheck.data.customlists.OfficeList;
 import healthcheck.data.firestore.Database;
 import healthcheck.data.firestore.ReadData;
 import healthcheck.data.firestore.WriteData;
@@ -10,6 +9,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class DataImport {
@@ -24,7 +24,7 @@ public class DataImport {
 
             // skips first line of csv
             String line = importFile.nextLine();
-            OfficeList officeList = Database.getInstance().getOfficeList();
+            ArrayList<Office> officeList = Database.getInstance().getOfficeList();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
 
             // loops through each line in the CSV
@@ -45,7 +45,7 @@ public class DataImport {
      *
      * @param splitLine String array containing all the office data from the CSV.
      */
-    private static void updateOfficeData(String[] splitLine, OfficeList officeList, DateTimeFormatter formatter) {
+    private static void updateOfficeData(String[] splitLine, ArrayList<Office> officeList, DateTimeFormatter formatter) {
         String officeCode = splitLine[0].replace('-', ' ').trim();
 
 

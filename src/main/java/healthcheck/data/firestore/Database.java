@@ -8,7 +8,6 @@ import com.google.firebase.cloud.FirestoreClient;
 import healthcheck.data.HealthCheckPeriod;
 import healthcheck.data.MySettings;
 import healthcheck.data.Office;
-import healthcheck.data.customlists.OfficeList;
 
 import java.io.FileInputStream;
 import java.time.LocalDate;
@@ -17,7 +16,7 @@ import java.util.ArrayList;
 public class Database {
     private static Database instance = null;
     private Firestore firestore;
-    private OfficeList officeList;
+    private ArrayList<Office> officeList;
     private ArrayList<HealthCheckPeriod> healthCheckPeriodList;
     private MySettings settings;
     private boolean inactiveOfficesLoaded;
@@ -26,7 +25,7 @@ public class Database {
     private Database() {
         instance = this;
         firestore = initializeFirebase();
-        officeList = new OfficeList(ReadData.getActiveOfficeList());
+        officeList = ReadData.getActiveOfficeList();
         healthCheckPeriodList = new ArrayList<>();
         settings = MySettings.getInstance();
         inactiveOfficesLoaded = false;
@@ -77,7 +76,7 @@ public class Database {
         return healthCheckPeriodList;
     }
 
-    public OfficeList getOfficeList(){
+    public ArrayList<Office> getOfficeList(){
         return officeList;
     }
 

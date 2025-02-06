@@ -2,7 +2,6 @@ package healthcheck.gui.dialogs;
 
 import com.github.lgooddatepicker.components.DatePicker;
 import healthcheck.data.HealthCheckPeriod;
-import healthcheck.gui.mainpanels.healthchecks.HealthCheckHostPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,11 +13,10 @@ public class NewHealthCheckPeriodDialog extends JDialog implements ActionListene
     private DatePicker startdate;
     private DatePicker enddate;
     private HealthCheckPeriod period = null;
-    private HealthCheckHostPanel hostPanel;
 
-    public NewHealthCheckPeriodDialog(JFrame parent, HealthCheckHostPanel hostPanel) {
+    public NewHealthCheckPeriodDialog(JFrame parent) {
         super(parent, "Add New", null);
-        this.hostPanel = hostPanel;
+        //this.hostPanel = hostPanel;
         this.setSize(450, 300);
         this.setLayout(new GridBagLayout());
 
@@ -56,7 +54,7 @@ public class NewHealthCheckPeriodDialog extends JDialog implements ActionListene
     public void actionPerformed(ActionEvent e) {
         String actionCommand = e.getActionCommand();
         if (actionCommand.equals("save")) {
-            hostPanel.createNewPeriod(startdate.getDate(), enddate.getDate());
+            //hostPanel.createNewPeriod(startdate.getDate(), enddate.getDate());
         }
         this.dispose();
     }
