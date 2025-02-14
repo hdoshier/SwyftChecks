@@ -42,6 +42,7 @@ public class OfficePanel extends JPanel implements ActionListener {
     private JTextArea generalNotesField;
     private JTextArea contactNotesField;
     private JComboBox<String> trainingStatusComboBox;
+    private JButton changeStatusButton;
 
     public OfficePanel(MainWindow mainWindow, OfficeListPanel officeListPanel, Office office) {
         this.officeListPanel = officeListPanel;
@@ -249,10 +250,10 @@ public class OfficePanel extends JPanel implements ActionListener {
         // deactivate button
         gbc.gridy = 6;
         gbc.weighty = 0;
-        JButton statusButton = new JButton(office.isActiveOffice() ? "Deactivate" : "Activate");
-        statusButton.addActionListener(this);
-        statusButton.setActionCommand("statusChange");
-        panel.add(statusButton, gbc);
+        changeStatusButton = new JButton(office.isActiveOffice() ? "Deactivate" : "Activate");
+        changeStatusButton.addActionListener(this);
+        changeStatusButton.setActionCommand("statusChange");
+        panel.add(changeStatusButton, gbc);
 
         return panel;
     }
@@ -375,6 +376,7 @@ public class OfficePanel extends JPanel implements ActionListener {
             WriteData.saveOffice(office);
         }
         if (actionCommand.equals("back")) {
+            officeListPanel.buildOfficeListTable();
             mainWindow.loadPanel(officeListPanel);
         }
         if (actionCommand.equals("next")) {
@@ -384,12 +386,25 @@ public class OfficePanel extends JPanel implements ActionListener {
             officeListPanel.loadPreviousOffice();
         }
         if (actionCommand.equals("statusChange")) {
-            Database db = Database.getInstance();
-            // TODO create confirmation dialog
-            System.out.println(office.isActiveOffice());
-            //db.switchOfficeStatus(office);
-            // TODO reload this panel
+            boolean activeOffice = office.isActiveOffice();
+            if (confirmStatusChange(activeOffice)) {
+                // TODO debug switching office status
+                //Database db = Database.getInstance();
+                //db.switchOfficeStatus(office);
+                changeStatusButton.setText(activeOffice ? "Deactivate" : "Activate");
+            }
         }
+    }
+
+    private boolean confirmStatusChange(boolean activeOffice) {
+        String[] options = {"Yes", "No", "Cancel"};
+        String statusOption = activeOffice ? "deactivate" : "activate";
+        String text = "Are you sure you want to " + statusOption + " this office?";
+        int n = JOptionPane.showOptionDialog(this, text, "Confirm",
+                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+                null, options, options[2]);
+        // n is == 0 if yes is clicked.
+        return n == 0;
     }
 
     private void updateOfficeData() {

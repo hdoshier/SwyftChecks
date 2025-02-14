@@ -12,12 +12,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.time.LocalDate;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws URISyntaxException, IOException {
         System.out.println("SwyftChecks Started!");
 
         // sets the data for the instance.
@@ -31,6 +32,7 @@ public class Main {
         Database.getInstance().addNewHealthCheckPeriod(LocalDate.now(), LocalDate.now().plusMonths(1));
 
         runGui();
+        //callTest();
     }
 
     public static void runGui() {
@@ -39,5 +41,11 @@ public class Main {
                 new MainWindow().setVisible(true);
             }
         });
+    }
+
+    public static void callTest() throws URISyntaxException, IOException {
+        Desktop desktop = Desktop.getDesktop();
+        URI uri = new URI("tel:" + "3162104232");
+        desktop.browse(uri);
     }
 }

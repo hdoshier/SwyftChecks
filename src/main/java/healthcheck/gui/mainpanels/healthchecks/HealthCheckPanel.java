@@ -2,7 +2,10 @@ package healthcheck.gui.mainpanels.healthchecks;
 
 import com.github.lgooddatepicker.components.DatePicker;
 import healthcheck.data.*;
+import healthcheck.data.firestore.Database;
+import healthcheck.data.firestore.ReadData;
 import healthcheck.gui.MainWindow;
+import healthcheck.gui.mainpanels.offices.OfficePanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -20,12 +24,16 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
     private HealthCheck check;
     private Office office;
     private MainWindow mainWindow;
+    private JPanel contentPanel = null;
+    private GridBagConstraints mainGbc;
+    private JLabel activeLabel;
+
+    // contact panel
     private JTextField subjectTextField;
     private JTextArea bodyArea;
     private JTextField contactEmail;
     private JTextField contactName;
     private HealthCheckListPanel parent;
-    private JLabel healthCheckStatusLabel = null;
     private JComboBox<String> emailTemplateBox;
 
     // manage fields
@@ -58,47 +66,68 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         this.mainWindow = mainWindow;
         this.setLayout(new GridBagLayout());
         this.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
-        GridBagConstraints mainGbc = new GridBagConstraints();
+        mainGbc = new GridBagConstraints();
         mainGbc.insets = new Insets(2, 2, 2, 2);
         mainGbc.fill = GridBagConstraints.BOTH;
         mainGbc.weightx = 1.0;
-        mainGbc.gridwidth = 2;
         this.add(createNavPanel(), mainGbc);
+        setContentPanel(checkDataPanel());
+    }
 
+    private void setContentPanel(JPanel panel) {
+        if (contentPanel != null) {
+            this.remove(contentPanel);
+        }
+
+        this.contentPanel = panel;
+        mainGbc.gridy = 1;
+        mainGbc.weighty = 1.0;
+        this.add(contentPanel, mainGbc);
+        this.revalidate();
+        this.repaint();
+    }
+
+    private JPanel checkDataPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 2, 2, 2);
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
 
         // manage data
-        mainGbc.gridy = 1;
-        mainGbc.gridwidth = 1;
-        mainGbc.weightx = 0.75;
-        this.add(createManagePanel(), mainGbc);
+        gbc.gridwidth = 1;
+        gbc.weightx = 0.75;
+        panel.add(createManagePanel(), gbc);
 
         // Office Data
-        mainGbc.gridx = 1;
-        mainGbc.weightx = 0.25;
-        this.add(createOfficePanel(), mainGbc);
+        gbc.gridx = 1;
+        gbc.weightx = 0.25;
+        panel.add(createOfficePanel(), gbc);
 
         // email info
-        mainGbc.gridy = 2;
-        mainGbc.gridx = 1;
-        mainGbc.gridheight = 2;
-        mainGbc.weighty = 1.0;
-        mainGbc.weightx = 0.25;
-        this.add(contactOfficePanel(), mainGbc);
+        gbc.gridy = 1;
+        gbc.gridx = 1;
+        gbc.gridheight = 2;
+        gbc.weighty = 1.0;
+        gbc.weightx = 0.25;
+        panel.add(contactOfficePanel(), gbc);
 
         // add health check data
-        mainGbc.gridy = 2;
-        mainGbc.gridx = 0;
-        mainGbc.weightx = 0.75;
-        mainGbc.gridheight = 1;
-        this.add(createDataPanel(), mainGbc);
+        gbc.gridy = 1;
+        gbc.gridx = 0;
+        gbc.weightx = 0.75;
+        gbc.gridheight = 1;
+        panel.add(createDataPanel(), gbc);
 
         // add billable hour history
-        mainGbc.gridy = 3;
-        mainGbc.gridx = 0;
-        mainGbc.weighty = 0;
-        mainGbc.gridheight = 1;
-        this.add(createBillableHoursPanel(), mainGbc);
+        gbc.gridy = 2;
+        gbc.gridx = 0;
+        gbc.weighty = 0;
+        gbc.gridheight = 1;
+        panel.add(createBillableHoursPanel(), gbc);
 
+        return panel;
     }
 
     private JPanel createNavPanel() {
@@ -182,7 +211,15 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
             public void mouseClicked(MouseEvent e) {
                 // Perform action (switch view, print message, etc.)
                 System.out.println(name + " clicked");
-
+                /*
+                TODO implement switching between office and HC
+                String officeCode = office.getOfficeCode();
+                if (name.equals(officeCode)) {
+                    setContentPanel(new OfficePanel(HealthCheckPanel.this, ReadData.readIndividualOffice(office)));
+                } else {
+                    setContentPanel(checkDataPanel());
+                }
+                 */
             }
         });
 
@@ -228,25 +265,62 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
 
 
         //office primary contact name - textfield
-        JPanel contactPanel = new JPanel();
-        contactPanel.setLayout(new BoxLayout(contactPanel, BoxLayout.Y_AXIS));
-        contactPanel.add(new JLabel("Primary Contact Name"));
-        contactName = new JTextField(office.getOfficePrimaryContactPerson());
-        contactPanel.add(contactName);
         gbc.gridx = 0;
         gbc.gridy = ycord;
-        panel.add(contactPanel, gbc);
+        contactName = new JTextField(office.getOfficePrimaryContactPerson());
+        panel.add(dataCollectionPanel("Primary Contact Person", contactName), gbc);
 
         //office primary contact email - textfield
-        JPanel emailPanel = new JPanel();
-        emailPanel.setLayout(new BoxLayout(emailPanel, BoxLayout.Y_AXIS));
-        emailPanel.add(new JLabel("Primary Contact Email"));
-        contactEmail = new JTextField(office.getOfficePrimaryContactEmail());
-        emailPanel.add(contactEmail);
         gbc.gridx = 1;
-        gbc.gridy = ycord;
-        panel.add(emailPanel, gbc);
+        gbc.gridy = ycord++;
+        JLabel officeOwner = new JLabel(office.getOfficeOwner());
+        panel.add(dataCollectionPanel("Office Owner", officeOwner), gbc);
 
+        //office primary contact email - textfield
+        gbc.gridx = 0;
+        gbc.gridy = ycord;
+        contactEmail = new JTextField(office.getOfficePrimaryContactEmail());
+        panel.add(dataCollectionPanel("Primary Contact Email", contactEmail), gbc);
+
+        //office primary contact email - textfield
+        gbc.gridx = 1;
+        gbc.gridy = ycord++;
+        JLabel phoneLabel = new JLabel(office.getOfficePrimaryContactPhone());
+        phoneLabel.setOpaque(true);
+        phoneLabel.setForeground(MyGlobalVariables.SWYFTOPS_BLUE);
+        phoneLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+                phoneLabel.setBackground(MyGlobalVariables.SWYFTOPS_ORANGE);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                phoneLabel.setBackground(officeOwner.getBackground());
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Desktop desktop = Desktop.getDesktop();
+                try{
+                    String phoneNumber = office.getOfficePrimaryContactPhone().replaceAll("[^0-9]", "");
+                    URI uri = new URI("tel:" + phoneNumber);
+                    desktop.browse(uri);
+                } catch (Exception ex) {
+                    // do nothing
+                }
+
+            }
+        });
+        panel.add(dataCollectionPanel("Primary Contact Phone", phoneLabel), gbc);
+
+        // contact notes
+        gbc.gridwidth = 2;
+        gbc.gridx = 0;
+        gbc.gridy = ycord++;
+        JLabel contactNotesLabel = new JLabel(office.getContactNotes());
+        panel.add(dataCollectionPanel("Contact Notes", contactNotesLabel), gbc);
 
 
         gbc.anchor = GridBagConstraints.WEST;
@@ -263,8 +337,6 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
             }
         });
         templatePanel.add(emailTemplateBox);
-        gbc.gridx = 0;
-        gbc.weightx = 2;
         gbc.gridy = ycord++;
         panel.add(templatePanel, gbc);
 
@@ -317,25 +389,6 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         codePanel.setLayout(new BoxLayout(codePanel, BoxLayout.Y_AXIS));
         codePanel.add(new JLabel("Office Code"));
         JLabel codeLabel = new JLabel(office.getOfficeCode());
-        codeLabel.setOpaque(true);
-        codeLabel.setForeground(MyGlobalVariables.SWYFTOPS_BLUE);
-        codeLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-                codeLabel.setBackground(MyGlobalVariables.SWYFTOPS_ORANGE); 
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                codeLabel.setBackground(codePanel.getBackground());
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                //parent.openOfficePanel(ReadData.readIndividualOffice(office));
-            }
-        });
         codePanel.add(codeLabel);
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -351,25 +404,7 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         gbc.gridy = 0;
         panel.add(namePanel, gbc);
 
-        //office primary contact name - textfield
-        JPanel contactPanel = new JPanel();
-        contactPanel.setLayout(new BoxLayout(contactPanel, BoxLayout.Y_AXIS));
-        contactPanel.add(new JLabel("Primary Contact Name"));
-        contactName = new JTextField(office.getOfficePrimaryContactPerson());
-        contactPanel.add(contactName);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        panel.add(contactPanel, gbc);
 
-        //office primary contact email - textfield
-        JPanel emailPanel = new JPanel();
-        emailPanel.setLayout(new BoxLayout(emailPanel, BoxLayout.Y_AXIS));
-        emailPanel.add(new JLabel("Primary Contact Email"));
-        contactEmail = new JTextField(office.getOfficePrimaryContactEmail());
-        emailPanel.add(contactEmail);
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        panel.add(emailPanel, gbc);
 
         // general notes
         JPanel generalPanel = new JPanel();

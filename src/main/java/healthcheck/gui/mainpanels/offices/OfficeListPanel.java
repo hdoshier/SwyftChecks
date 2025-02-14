@@ -227,7 +227,7 @@ public class OfficeListPanel extends JPanel implements ActionListener {
         System.out.println(Arrays.toString(officeTable.getSelectedRows()));
     }
 
-    private void buildOfficeListTable() {
+    public void buildOfficeListTable() {
         // Create table with a custom model
         OfficeTableModel tableModel = new OfficeTableModel();
         officeTable = new JTable(tableModel);
