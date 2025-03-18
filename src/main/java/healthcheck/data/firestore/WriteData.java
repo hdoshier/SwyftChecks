@@ -42,6 +42,7 @@ public class WriteData {
     public static void saveOffice(Office office) {
         // pushes the data to the database
         Firestore db = Database.getFirestore();
+        Database.getInstance().replaceOffice(office);
         if (office.isActiveOffice()) {
             db.collection("offices").document(office.getOfficeCode()).set(packageOffice(office));
         } else {

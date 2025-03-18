@@ -256,11 +256,6 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(2, 2, 2, 2);
-
-        JPanel officeInfo = new JPanel(new GridBagLayout());
-        GridBagConstraints officeGBC = new GridBagConstraints();
-        officeGBC.fill = GridBagConstraints.BOTH;
-        officeGBC.insets = new Insets(2, 2, 2, 2);
         int ycord = 0;
 
 
@@ -270,7 +265,7 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         contactName = new JTextField(office.getOfficePrimaryContactPerson());
         panel.add(dataCollectionPanel("Primary Contact Person", contactName), gbc);
 
-        //office primary contact email - textfield
+        //office owner - Label
         gbc.gridx = 1;
         gbc.gridy = ycord++;
         JLabel officeOwner = new JLabel(office.getOfficeOwner());
@@ -282,7 +277,7 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         contactEmail = new JTextField(office.getOfficePrimaryContactEmail());
         panel.add(dataCollectionPanel("Primary Contact Email", contactEmail), gbc);
 
-        //office primary contact email - textfield
+        //office primary contact Phone - Label
         gbc.gridx = 1;
         gbc.gridy = ycord++;
         JLabel phoneLabel = new JLabel(office.getOfficePrimaryContactPhone());
@@ -662,7 +657,7 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
             }
             check.setEmailTemplateSent((String) emailTemplateBox.getSelectedItem());
             saveHealthCheck();
-            Email.prepEmail(getContactFirstName(), contactEmail.getText(), subjectTextField.getText(), body);
+            Email.prepEmail(contactName.getText(), contactEmail.getText(), subjectTextField.getText(), body);
         }
         if (actionCommand.equals("save")) {
             System.out.println(actionCommand);
@@ -678,10 +673,5 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
             parent.buildOfficeListTable();
             mainWindow.loadPanel(parent);
         }
-    }
-
-    private String getContactFirstName() {
-        String[] name = contactName.getText().split(" ");
-        return name[0];
     }
 }

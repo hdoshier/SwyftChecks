@@ -85,6 +85,7 @@ public class DataImport {
         // add billable hour history
         addBillableHourHistoryToOffice(office, splitLine);
         officeList.add(office);
+
         WriteData.saveOffice(office);
     }
 

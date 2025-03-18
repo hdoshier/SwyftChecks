@@ -2,7 +2,6 @@ package healthcheck.gui.mainpanels.offices;
 
 import healthcheck.data.MyGlobalVariables;
 import healthcheck.data.Office;
-import healthcheck.data.firestore.Database;
 import healthcheck.data.firestore.WriteData;
 import healthcheck.gui.MainWindow;
 
@@ -10,12 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.time.LocalDate;
 import java.util.HashMap;
-
-import com.github.lgooddatepicker.components.DatePicker;
 
 /**
  *The OfficePanel gui class.
@@ -31,18 +25,11 @@ public class OfficePanel extends JPanel implements ActionListener {
     OfficeListPanel officeListPanel;
     Office office;
     JPanel hostPanel;
-    private DatePicker execAgreementDateField;
-    private JTextField officeNameField;
-    private JTextField officeOwnerField;
-    private JTextField officeOwnerEmailField;
-    private JTextField officePrimaryContactPersonField;
-    private JTextField officePrimaryContactEmailField;
-    private JTextField officePrimaryContactPhoneField;
     private JTextArea leadershipNotesField;
     private JTextArea generalNotesField;
     private JTextArea contactNotesField;
-    private JComboBox<String> trainingStatusComboBox;
     private JButton changeStatusButton;
+    private OfficeDetailsPanel officeDetailsPanel;
 
     public OfficePanel(MainWindow mainWindow, OfficeListPanel officeListPanel, Office office) {
         this.officeListPanel = officeListPanel;
@@ -58,266 +45,142 @@ public class OfficePanel extends JPanel implements ActionListener {
     private void buildOfficePanel(Office office) {
         this.office = office;
         this.setLayout(new GridBagLayout());
-
+        this.setBorder(BorderFactory.createLineBorder(Color.black));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.weightx = 1.0;
+        gbc.gridwidth = 3;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(2, 2, 2, 2);
 
         // navigation panel
-        gbc.gridx = 0;
-        gbc.gridy = 0;
         this.add(buildNavPanel(), gbc);
 
         // office data/info panel
         gbc.gridy = 1;
+        gbc.gridwidth = 1;
         gbc.weighty = 1.0;
-        this.add(buildContentPanel(), gbc);
+        gbc.weightx = 0.3333;
+
+        // office info panel
+        gbc.gridheight = 2;
+        officeDetailsPanel = new OfficeDetailsPanel(this, office);
+        this.add(officeDetailsPanel, gbc);
+
+        // contact info panel
+        gbc.gridheight = 1;
+        gbc.gridx = 1;
+        this.add(createNotesPanel(), gbc);
+
+        gbc.gridy = 2;
+        this.add(new HealthCheckReviewPanel(this, office), gbc);
+
+        // billable hours panel
+        gbc.gridx = 2;
+        gbc.weightx = 0.25;
+        gbc.gridheight = 2;
+        gbc.gridy = 1;
+        this.add(createBillableHoursPanel(), gbc);
+
     }
 
 
 
     private JPanel buildNavPanel() {
-        JPanel navPanel = new JPanel();
-        navPanel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE); // Base color
-        navPanel.setLayout(new GridBagLayout());
+        JPanel navPanel = new JPanel(new GridBagLayout());
+        navPanel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
         navPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
-        GridBagConstraints navGbc = new GridBagConstraints();
-        JPanel navOptionsPanel = new JPanel();
-        navOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(2, 2, 2, 2);
+        gbc.weighty = 0.05; // Further reduce vertical weight to minimize height
+
+        // Left buttons (Prev/Next)
+        gbc.gridx = 0;
+        gbc.weightx = 0;
+        navPanel.add(createButtonPanel(
+                new String[]{"Prev", "Next"},
+                new String[]{"prev", "next"},
+                FlowLayout.LEFT
+        ), gbc);
+
+        // Center office code and name
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        JPanel navOptionsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 17, 0));
         navOptionsPanel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
+        addNavItem(navOptionsPanel, office.getOfficeCode());
+        addNavItem(navOptionsPanel, office.getOfficeName());
+        navPanel.add(navOptionsPanel, gbc);
 
-        // have next and prev buttons to the far left
-        navGbc.gridx = 0;
-        // switch office panel config
-        JPanel buttonPanel = new JPanel();
-        navOptionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        buttonPanel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
-        JButton prevButton = new JButton("Prev");
-        prevButton.setActionCommand("prev");
-        prevButton.addActionListener(this);
-        buttonPanel.add(prevButton);
-        JButton nextButton = new JButton("Next");
-        nextButton.setActionCommand("next");
-        nextButton.addActionListener(this);
-        buttonPanel.add(nextButton);
-        navPanel.add(buttonPanel, navGbc);
+        // Right buttons (Save/Back)
+        gbc.gridx = 2;
+        gbc.weightx = 0;
+        navPanel.add(createButtonPanel(
+                new String[]{"Save", "Back"},
+                new String[]{"save", "back"},
+                FlowLayout.RIGHT
+        ), gbc);
 
-
-
-        //add nav options
-        navGbc.gridx = 1;
-        navGbc.weightx = 1.0;
-        addNavItem(navOptionsPanel, office.getOfficeCode(), true);
-        addNavItem(navOptionsPanel, "Health Check History", false);
-        navPanel.add(navOptionsPanel, navGbc);
-
-
-        // have save button be on the far right
-        navGbc.gridx = 2;
-        navGbc.weightx = 0;
-        // save panel config
-        buttonPanel = new JPanel();
-        navOptionsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
-        JButton saveButton = new JButton("Save");
-        saveButton.setActionCommand("save");
-        saveButton.addActionListener(this);
-        buttonPanel.add(saveButton);
-        JButton backButton = new JButton("Back");
-        backButton.setActionCommand("back");
-        backButton.addActionListener(this);
-        buttonPanel.add(backButton);
-        navPanel.add(buttonPanel, navGbc);
+        // Enforce a compact preferred height
+        navPanel.setPreferredSize(new Dimension(navPanel.getPreferredSize().width, 40)); // Reduced to 40 pixels
+        navPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40)); // Cap maximum height
 
         return navPanel;
     }
 
-    private void addNavItem(JPanel panel, String name, boolean isActive){
+    // Helper method to create button panels
+    private JPanel createButtonPanel(String[] labels, String[] commands, int alignment) {
+        JPanel panel = new JPanel(new FlowLayout(alignment, 5, 0)); // Added small horizontal gap (5)
+        panel.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
+        for (int i = 0; i < labels.length; i++) {
+            JButton button = new JButton(labels[i]);
+            button.setActionCommand(commands[i]);
+            button.addActionListener(this);
+            button.setMargin(new Insets(2, 5, 2, 5)); // Reduce internal padding of buttons
+            panel.add(button);
+        }
+        return panel;
+    }
+
+    // Modified addNavItem to control label height and background
+    private void addNavItem(JPanel panel, String name) {
         JLabel navItem = new JLabel(name);
         navItem.setOpaque(true);
-        navItem.setBackground(isActive ? MyGlobalVariables.SWYFTOPS_ORANGE : MyGlobalVariables.SWYFTOPS_BLUE); // Highlight active
         navItem.setForeground(Color.WHITE);
-        navItem.setFont(new Font("Arial", Font.PLAIN, 16));
-        navItem.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 10)); // Padding
-        navItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
-
-        // Add hover effect
-        navItem.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                navItem.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (!isActive) navItem.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Perform action (switch view, print message, etc.)
-                System.out.println("Health check history clicked");
-
-            }
-        });
-
+        navItem.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
+        navItem.setFont(new Font("Arial", Font.PLAIN, 30)); // Slightly smaller font to reduce height
+        navItem.setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 10)); // Minimal vertical padding (2, 2)
+        navItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30)); // Limit height to 30 pixels
         panel.add(navItem);
     }
 
-    private JPanel buildContentPanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(248, 248, 248));
-        panel.setBorder(BorderFactory.createLineBorder(Color.black));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(2, 2, 2, 2);
-        gbc.weighty = 1.0;
-        gbc.weightx = 0.3333;
-        gbc.fill = GridBagConstraints.BOTH;
-
-        // office info panel
-        panel.add(createOfficeInfoPanel(), gbc);
-
-        // contact info panel
-        gbc.gridx = 1;
-        panel.add(createContactInfoPanel(), gbc);
-
-        // billable hours panel
-        gbc.gridx = 2;
-        gbc.weightx = 0.25;
-        panel.add(createBillableHoursPanel(), gbc);
-
-
-        return panel;
-    }
-
-    private JPanel createOfficeInfoPanel() {
+    private JPanel createNotesPanel() {
         GridBagConstraints gbc = gbcFactory();
-        JPanel panel = panelFactory("Office Info", gbc);
-
-        // office name
-        gbc.gridy = 1;
-        JPanel dataPanel = new JPanel();
-        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
-        dataPanel.add(new JLabel("Office Name"));
-        officeNameField = new JTextField(office.getOfficeName());
-        dataPanel.add(officeNameField);
-        panel.add(dataPanel, gbc);
-
-        // agreement date
-        gbc.gridy = 2;
-        dataPanel = new JPanel();
-        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
-        dataPanel.add(new JLabel("SwyftOps Start Date"));
-        execAgreementDateField = new DatePicker();
-        execAgreementDateField.setDate(office.getExecAgreementDate());
-        dataPanel.add(execAgreementDateField);
-        panel.add(dataPanel, gbc);
-
-        // training status
-        gbc.gridy = 3;
-        dataPanel = new JPanel();
-        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
-        dataPanel.add(new JLabel("Training Status"));
-        trainingStatusComboBox = new JComboBox<>(MyGlobalVariables.OFFICE_TRAINING_STATUS_ARRAY);
-        trainingStatusComboBox.setSelectedIndex(office.getTrainingStatus());
-        dataPanel.add(trainingStatusComboBox);
-        panel.add(dataPanel, gbc);
-
+        gbc.insets = new Insets(2, 10, 15, 10);
+        gbc.gridwidth = 3;
+        JPanel panel = panelFactory("Notes", gbc);
 
         // leadership notes
+        gbc.gridwidth = 1;
+        gbc.gridy = 1;
+        gbc.weightx = 1;
         gbc.weighty = 1;
-        gbc.gridy = 4;
-        dataPanel = new JPanel();
-        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
-        dataPanel.add(new JLabel("Leadership Notes"));
         leadershipNotesField = new JTextArea(office.getLeadershipNotes());
         leadershipNotesField.setLineWrap(true);
-        dataPanel.add(leadershipNotesField);
-        panel.add(dataPanel, gbc);
+        panel.add(getDefaultDataPanel(leadershipNotesField, "Leadership Notes"), gbc);
 
         // general notes
-        gbc.gridy = 5;
-        dataPanel = new JPanel();
-        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
-        dataPanel.add(new JLabel("General Notes"));
+        gbc.gridx = 1;
         generalNotesField = new JTextArea(office.getGeneralNotes());
         generalNotesField.setLineWrap(true);
-        dataPanel.add(generalNotesField);
-        panel.add(dataPanel, gbc);
-
-        // deactivate button
-        gbc.gridy = 6;
-        gbc.weighty = 0;
-        changeStatusButton = new JButton(office.isActiveOffice() ? "Deactivate" : "Activate");
-        changeStatusButton.addActionListener(this);
-        changeStatusButton.setActionCommand("statusChange");
-        panel.add(changeStatusButton, gbc);
-
-        return panel;
-    }
-
-    private JPanel createContactInfoPanel() {
-        GridBagConstraints gbc = gbcFactory();
-        JPanel panel = panelFactory("Contact Info", gbc);
-
-        // Owner name
-        gbc.gridy = 1;
-        JPanel dataPanel = new JPanel();
-        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
-        dataPanel.add(new JLabel("Owner Name"));
-        officeOwnerField = new JTextField(office.getOfficeOwner());
-        dataPanel.add(officeOwnerField);
-        panel.add(dataPanel, gbc);
-
-        // Owner Email
-        gbc.gridy = 2;
-        dataPanel = new JPanel();
-        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
-        dataPanel.add(new JLabel("Owner Email"));
-        officeOwnerEmailField = new JTextField(office.getOfficeOwnerEmail());
-        dataPanel.add(officeOwnerEmailField);
-        panel.add(dataPanel, gbc);
-
-        // Primary Contact
-        gbc.gridy = 3;
-        dataPanel = new JPanel();
-        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
-        dataPanel.add(new JLabel("Primary Contact Name"));
-        officePrimaryContactPersonField = new JTextField(office.getOfficePrimaryContactPerson());
-        dataPanel.add(officePrimaryContactPersonField);
-        panel.add(dataPanel, gbc);
-
-        // primary contact email
-        gbc.gridy = 4;
-        dataPanel = new JPanel();
-        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
-        dataPanel.add(new JLabel("Primary Contact Email"));
-        officePrimaryContactEmailField = new JTextField(office.getOfficePrimaryContactEmail());
-        dataPanel.add(officePrimaryContactEmailField);
-        panel.add(dataPanel, gbc);
-
-        // primary contact phone number
-        gbc.gridy = 5;
-        dataPanel = new JPanel();
-        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
-        dataPanel.add(new JLabel("Primary Contact Phone Number"));
-        officePrimaryContactPhoneField = new JTextField(office.getOfficePrimaryContactPhone());
-        dataPanel.add(officePrimaryContactPhoneField);
-        panel.add(dataPanel, gbc);
-
+        panel.add(getDefaultDataPanel(generalNotesField, "General Notes"), gbc);
 
         // contact notes
-        gbc.gridy = 6;
-        gbc.weighty = 1;
-        dataPanel = new JPanel();
-        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
-        dataPanel.add(new JLabel("Contact Notes"));
+        gbc.gridx = 2;
         contactNotesField = new JTextArea(office.getContactNotes());
         contactNotesField.setLineWrap(true);
-        dataPanel.add(contactNotesField);
-        panel.add(dataPanel, gbc);
+        panel.add(getDefaultDataPanel(contactNotesField, "Contact Notes"), gbc);
 
         return panel;
     }
@@ -345,6 +208,14 @@ public class OfficePanel extends JPanel implements ActionListener {
         return panel;
     }
 
+    private JPanel getDefaultDataPanel(JComponent component, String label) {
+        JPanel dataPanel = new JPanel();
+        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
+        dataPanel.add(new JLabel(label));
+        dataPanel.add(component);
+        return dataPanel;
+    }
+
     private GridBagConstraints gbcFactory() {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
@@ -363,6 +234,16 @@ public class OfficePanel extends JPanel implements ActionListener {
         panel.add(label, gbc);
 
         return panel;
+    }
+
+    public void changeStatus() {
+        System.out.println("Changing status for: " + office.getOfficeName());
+        //confirmStatusChange();
+        //TODO manage status change
+        //updateOfficeData();
+        //Database db = Database.getInstance();
+        //db.switchOfficeStatus(office);
+        //changeStatusButton.setText(activeOffice ? "Deactivate" : "Activate");
     }
 
 
@@ -385,15 +266,6 @@ public class OfficePanel extends JPanel implements ActionListener {
         if (actionCommand.equals("prev")) {
             officeListPanel.loadPreviousOffice();
         }
-        if (actionCommand.equals("statusChange")) {
-            boolean activeOffice = office.isActiveOffice();
-            if (confirmStatusChange(activeOffice)) {
-                // TODO debug switching office status
-                //Database db = Database.getInstance();
-                //db.switchOfficeStatus(office);
-                changeStatusButton.setText(activeOffice ? "Deactivate" : "Activate");
-            }
-        }
     }
 
     private boolean confirmStatusChange(boolean activeOffice) {
@@ -408,18 +280,10 @@ public class OfficePanel extends JPanel implements ActionListener {
     }
 
     private void updateOfficeData() {
-        office.setOfficeName(officeNameField.getText());
-        office.setOfficeOwner(officeOwnerField.getText());
-        office.setOfficeOwnerEmail(officeOwnerEmailField.getText());
-        office.setOfficePrimaryContactPerson(officePrimaryContactPersonField.getText());
-        office.setOfficePrimaryContactEmail(officePrimaryContactEmailField.getText());
-        office.setOfficePrimaryContactPhone(officePrimaryContactPhoneField.getText());
-        office.setTrainingStatus(trainingStatusComboBox.getSelectedIndex());
+        officeDetailsPanel.save(office);
         office.setLeadershipNotes(leadershipNotesField.getText());
         office.setGeneralNotes(generalNotesField.getText());
         office.setContactNotes(contactNotesField.getText());
-        LocalDate date = execAgreementDateField.getDate();
-        office.setExecAgreementDate(date);
     }
 }
 

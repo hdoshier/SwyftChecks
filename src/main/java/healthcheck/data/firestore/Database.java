@@ -5,6 +5,7 @@ import com.google.cloud.firestore.*;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
+import healthcheck.data.HealthCheck;
 import healthcheck.data.HealthCheckPeriod;
 import healthcheck.data.MySettings;
 import healthcheck.data.Office;
@@ -32,7 +33,7 @@ public class Database {
     }
 
     public static Database getInstance() {
-        if (instance == null || instance.isOldDatabase()) {
+        if (instance == null) {
             instance = new Database();
         }
         return instance;
@@ -61,13 +62,23 @@ public class Database {
         officeList.addAll(ReadData.getInactiveOfficeList());
     }
 
-    /**
-     * Resets the database to match what's in the Firestore.
-     * Only resets the database if it's 2 or more days old. This check happens everytime the database instance is called.
-     */
-    public boolean isOldDatabase() {
-        // if officeList is older than yesterday, reload it.
-        return databaseCreationDate.isBefore(LocalDate.now().minusDays(1));
+    public ArrayList<HealthCheck> getHealthChecksByOffice(Office office) {
+        ArrayList<HealthCheck> list = new ArrayList<>(2);
+        for (HealthCheckPeriod period : healthCheckPeriodList) {
+            list.add(period.getHealthCheckByOffice(office));
+        }
+
+        return list;
+    }
+
+    public void replaceOffice(Office office) {
+        for (int i = 0; i < officeList.size(); i++) {
+            if (officeList.get(i).equals(office)) {
+                officeList.set(i, office);
+                System.out.println("Office Replaced");
+                return;
+            }
+        }
     }
 
 

@@ -1,10 +1,10 @@
 package healthcheck.gui.mainpanels.offices;
 
+import healthcheck.data.Email;
 import healthcheck.data.Office;
 import healthcheck.data.firestore.Database;
 import healthcheck.data.firestore.ReadData;
 import healthcheck.gui.MainWindow;
-import healthcheck.gui.dialogs.OfficeGlobalSetDialog;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -127,15 +127,20 @@ public class OfficeListPanel extends JPanel implements ActionListener {
         managePanel.setBackground(new Color(248, 248, 248));
         managePanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
-        JButton addNewButton = new JButton("Add New");
-        addNewButton.setActionCommand("addNew");
-        addNewButton.addActionListener(this);
-        managePanel.add(addNewButton);
-
         JButton globalSetButton = new JButton("Global Set");
         globalSetButton.setActionCommand("globalSet");
         globalSetButton.addActionListener(this);
         managePanel.add(globalSetButton);
+
+        JButton emailButton = new JButton("Email");
+        emailButton.setActionCommand("email");
+        emailButton.addActionListener(this);
+        managePanel.add(emailButton);
+
+        JButton callButton = new JButton("Call");
+        callButton.setActionCommand("call");
+        callButton.addActionListener(this);
+        managePanel.add(callButton);
 
         this.add(managePanel, mainGbc);
     }
@@ -223,6 +228,23 @@ public class OfficeListPanel extends JPanel implements ActionListener {
             // TODO Pausing Development until I have a better idea of what to add.
             //OfficeGlobalSetDialog diag = new OfficeGlobalSetDialog(parent, this);
             //diag.run();
+        }
+        if (actionCommand.equals("call")) {
+            int row = officeTable.getSelectedRow();
+            if (row < 0) {
+                return;
+            }
+            Office office = officeList.get(row);
+            Email.prepCall(office.getOfficePrimaryContactPhone());
+        }
+        if (actionCommand.equals("email")) {
+            int row = officeTable.getSelectedRow();
+            if (row < 0) {
+                return;
+            }
+            Office office = officeList.get(row);
+            String subject = "SwyftOps | " + office.getOfficeCode() + " | ";
+            Email.prepEmail(office.getOfficePrimaryContactPerson(), office.getOfficePrimaryContactEmail(), subject, "");
         }
         System.out.println(Arrays.toString(officeTable.getSelectedRows()));
     }
