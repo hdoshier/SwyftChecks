@@ -18,19 +18,6 @@ public class HealthCheckPeriod implements Serializable {
         this.addHealthChecks();
     }
 
-    public HealthCheck getHealthCheckByOffice(Office office) {
-        return getHealthCheckByOffice(office.getOfficeCode());
-    }
-    public HealthCheck getHealthCheckByOffice(String officeCode) {
-        //TODO retrieve from database
-        for (HealthCheck check : healthCheckList) {
-            if (check.getOffice().getOfficeCode().equals(officeCode)) {
-                return check;
-            }
-        }
-        return null;
-    }
-
     private void addHealthChecks() {
         ArrayList<Office> officeList = Database.getInstance().getOfficeList();
         healthCheckList = new ArrayList<>(officeList.size());

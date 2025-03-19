@@ -62,15 +62,6 @@ public class Database {
         officeList.addAll(ReadData.getInactiveOfficeList());
     }
 
-    public ArrayList<HealthCheck> getHealthChecksByOffice(Office office) {
-        ArrayList<HealthCheck> list = new ArrayList<>(2);
-        for (HealthCheckPeriod period : healthCheckPeriodList) {
-            list.add(period.getHealthCheckByOffice(office));
-        }
-
-        return list;
-    }
-
     public void replaceOffice(Office office) {
         for (int i = 0; i < officeList.size(); i++) {
             if (officeList.get(i).equals(office)) {

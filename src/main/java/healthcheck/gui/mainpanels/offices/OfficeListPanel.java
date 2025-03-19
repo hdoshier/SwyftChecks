@@ -196,7 +196,7 @@ public class OfficeListPanel extends JPanel implements ActionListener {
     public void loadNextOffice() {
         int index = officeIndex + 1;
         if (index < 0 || index >= officeList.size()) {
-            System.out.println("Invalid Index: " + index);
+            JOptionPane.showMessageDialog(this, "No next office available.", "End of List", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
         loadOffice(index);
@@ -205,7 +205,7 @@ public class OfficeListPanel extends JPanel implements ActionListener {
     public void loadPreviousOffice() {
         int index = officeIndex - 1;
         if (index < 0 || index >= officeList.size()) {
-            System.out.println("Invalid Index: " + index);
+            JOptionPane.showMessageDialog(this, "No previous office available.", "Start of List", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
         loadOffice(index);
@@ -250,42 +250,61 @@ public class OfficeListPanel extends JPanel implements ActionListener {
     }
 
     public void buildOfficeListTable() {
-        // Create table with a custom model
-        OfficeTableModel tableModel = new OfficeTableModel();
-        officeTable = new JTable(tableModel);
-        officeTable.setRowHeight(25);
+        if (officeTable == null) {
+            OfficeTableModel tableModel = new OfficeTableModel();
+            officeTable = new JTable(tableModel);
+            officeTable.setRowHeight(25);
 
+            TableColumn buttonColumn = officeTable.getColumnModel().getColumn(0);
+            buttonColumn.setCellRenderer(new ButtonRenderer());
+            buttonColumn.setCellEditor(new ButtonEditor(new JCheckBox(), this));
+            buttonColumn.setPreferredWidth(50);
 
-        // Customize button column
-        TableColumn buttonColumn = officeTable.getColumnModel().getColumn(0);
-        buttonColumn.setCellRenderer(new ButtonRenderer());
-        buttonColumn.setCellEditor(new ButtonEditor(new JCheckBox(), this));
-
-        // Adjust the width of the button column
-        buttonColumn.setPreferredWidth(2); // Set the preferred width for column 0
-
-        if (officePane != null) {
-            this.remove(officePane);
+            officePane = new JScrollPane(officeTable);
+            add(officePane, mainGbc);
         }
 
-        // Wrap table in a scroll pane
-        officePane = new JScrollPane(officeTable);
-
-        // Populate table with office data
+        OfficeTableModel tableModel = (OfficeTableModel) officeTable.getModel();
+        tableModel.clear();
         filterOfficeList();
         for (Office office : officeList) {
             tableModel.addOffice(office);
         }
-
-        // Add the scroll pane to the panel
-        this.add(officePane, mainGbc);
-        this.revalidate();
-        this.repaint();
+        officeTable.revalidate();
+        officeTable.repaint();
     }
 
-    // TABLE CONFIGURATION CLASSES !!
+    private Office getFirstSelectedOffice() {
+        int selectedRow = officeTable.getSelectedRow();
+        if (selectedRow >= 0 && selectedRow < officeList.size()) {
+            return officeList.get(selectedRow);
+        }
+        return null;
+    }
 
-    // Button Renderer Class
+    private Office getOfficeAt(int row) {
+        if (row >= 0 && row < officeList.size()) {
+            return officeList.get(row);
+        }
+        return null;
+    }
+
+    // Utility Methods
+    private JPanel createLabeledField(String labelText, JComponent component, int alignment) {
+        JPanel panel = new JPanel(new FlowLayout(alignment));
+        panel.add(new JLabel(labelText));
+        panel.add(component);
+        return panel;
+    }
+
+    private JButton createButton(String text, String actionCommand, ActionListener listener) {
+        JButton button = new JButton(text);
+        button.setActionCommand(actionCommand);
+        button.addActionListener(listener);
+        return button;
+    }
+
+    // Inner Classes for Table Configuration
     static class ButtonRenderer extends JButton implements TableCellRenderer {
         public ButtonRenderer() {
             setOpaque(true);
@@ -294,7 +313,6 @@ public class OfficeListPanel extends JPanel implements ActionListener {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             setText(value != null ? value.toString() : "Edit");
-            setPreferredSize(new Dimension(getPreferredSize().width + 10, getPreferredSize().height)); // Adjust button width
             if (isSelected) {
                 setBackground(table.getSelectionBackground());
                 setForeground(table.getSelectionForeground());
@@ -306,12 +324,11 @@ public class OfficeListPanel extends JPanel implements ActionListener {
         }
     }
 
-    // Button Editor Class
     static class ButtonEditor extends DefaultCellEditor {
         private final JButton button;
         private boolean isPushed;
-        private final OfficeListPanel parentPanel; // Reference to the parent panel
-        private int currentRow; // Store the row number
+        private final OfficeListPanel parentPanel;
+        private int currentRow;
 
         public ButtonEditor(JCheckBox checkBox, OfficeListPanel parentPanel) {
             super(checkBox);
@@ -323,9 +340,8 @@ public class OfficeListPanel extends JPanel implements ActionListener {
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            currentRow = row; // Store the current row
+            currentRow = row;
             button.setText(value != null ? value.toString() : "Edit");
-            button.setPreferredSize(new Dimension(button.getPreferredSize().width + 10, button.getPreferredSize().height)); // Adjust button width
             isPushed = true;
             return button;
         }
@@ -333,7 +349,6 @@ public class OfficeListPanel extends JPanel implements ActionListener {
         @Override
         public Object getCellEditorValue() {
             if (isPushed) {
-                // Use the currentRow to load the office
                 parentPanel.loadOffice(currentRow);
             }
             isPushed = false;
@@ -341,45 +356,58 @@ public class OfficeListPanel extends JPanel implements ActionListener {
         }
     }
 
-    // Custom TableModel
     static class OfficeTableModel extends AbstractTableModel {
-        private final String[] columnNames = {"", "Office Code", "Office Name", "Contact Name", "Contact Email"};
-        private final ArrayList<Object[]> data = new ArrayList<>();
+        private static final String[] COLUMN_NAMES = {"", "Office Code", "Office Name", "Contact Name", "Contact Email"};
+        private final ArrayList<Office> offices = new ArrayList<>();
 
         @Override
         public int getRowCount() {
-            return data.size();
+            return offices.size();
         }
 
         @Override
         public int getColumnCount() {
-            return columnNames.length;
+            return COLUMN_NAMES.length;
         }
 
         @Override
         public Object getValueAt(int row, int column) {
-            return data.get(row)[column];
-        }
-
-        @Override
-        public void setValueAt(Object value, int row, int column) {
-            data.get(row)[column] = value;
-            fireTableCellUpdated(row, column);
+            Office office = offices.get(row);
+            return switch (column) {
+                case 0 -> "Edit";
+                case 1 -> office.getOfficeCode();
+                case 2 -> office.getOfficeName();
+                case 3 -> office.getOfficePrimaryContactPerson();
+                case 4 -> office.getOfficePrimaryContactEmail();
+                default -> null;
+            };
         }
 
         @Override
         public String getColumnName(int column) {
-            return columnNames[column];
+            return COLUMN_NAMES[column];
         }
 
         @Override
         public boolean isCellEditable(int row, int column) {
-            return column == 0; // allows the button to be clicked
+            return column == 0;
         }
 
         public void addOffice(Office office) {
-            data.add(new Object[]{"Edit", office.getOfficeCode(), office.getOfficeName(), office.getOfficePrimaryContactPerson(), office.getOfficePrimaryContactEmail()});
-            fireTableRowsInserted(data.size() - 1, data.size() - 1);
+            offices.add(office);
+            fireTableRowsInserted(offices.size() - 1, offices.size() - 1);
+        }
+
+        public void clear() {
+            int size = offices.size();
+            offices.clear();
+            if (size > 0) {
+                fireTableRowsDeleted(0, size - 1);
+            }
+        }
+
+        public Office getOfficeAt(int row) {
+            return offices.get(row);
         }
     }
 }

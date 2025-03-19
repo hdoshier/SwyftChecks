@@ -13,7 +13,7 @@ public class WriteData {
         HashMap<String, Object> data = new HashMap<>(22);
 
         //enter data into map
-        data.put("office", check.getOffice());
+        data.put("office", check.getOfficeCode());
         data.put("activeClients", check.getActiveClients());
         data.put("activeCaregivers", check.getActiveCaregivers());
         data.put("contactReason", check.getContactReason());
@@ -89,7 +89,7 @@ public class WriteData {
         data.put("officePrimaryContactPhone", office.getOfficePrimaryContactPhone());
         data.put("leadershipNotes", office.getLeadershipNotes());
         data.put("generalNotes", office.getGeneralNotes());
-        data.put("contactlNotes", office.getContactNotes());
+        data.put("contactNotes", office.getContactNotes());
         data.put("trainingStatus", office.getTrainingStatus());
         data.put("billableHourHistory", office.getBillableHourHistory());
         data.put("activeOffice", office.isActiveOffice());

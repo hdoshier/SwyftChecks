@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.time.LocalDate;
 
 public class HealthCheck implements Serializable {
-
     private Office office;
+    private String officeCode;
     private int activeClients = 0;
     private int activeCaregivers = 0;
     private String contactReason = "";
@@ -30,14 +30,19 @@ public class HealthCheck implements Serializable {
     private boolean flagedForLeadershipReview = false;
     private String emailTemplateSent;
 
-    public HealthCheck( Office office) {
-        this.office = office;
+    public HealthCheck(Office officeCode) {
+        this.office = officeCode;
+        this.officeCode = officeCode.getOfficeCode();
         //TODO automatomate previousContactReason
     }
 
+    public Office getOffice() {return office;}
+
 
     // getters and setters
-
+    public String getOfficeCode() {
+        return officeCode;
+    }
 
     public LocalDate getCheckCompletionDate() {
         return checkCompletionDate;
@@ -61,14 +66,6 @@ public class HealthCheck implements Serializable {
 
     public void setFlagedForLeadershipReview(boolean flagedForLeadershipReview) {
         this.flagedForLeadershipReview = flagedForLeadershipReview;
-    }
-
-    public void setOffice(Office office) {
-        this.office = office;
-    }
-
-    public Office getOffice() {
-        return office;
     }
 
     public int getHealthCheckStatus() {
