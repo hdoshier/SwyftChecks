@@ -1,5 +1,6 @@
 package healthcheck.gui;
 
+import healthcheck.gui.mainpanels.HomePanel;
 import healthcheck.gui.mainpanels.offices.OfficeListPanel;
 
 import java.awt.*;
@@ -42,7 +43,7 @@ public class MainWindow extends JFrame {
 
         gbc.weightx = 0.85;
         gbc.gridx = 1;
-        this.loadPanel(new OfficeListPanel(this));
+        this.loadPanel(new HomePanel(this));
 
     }
 

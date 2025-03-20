@@ -31,7 +31,6 @@ public class HealthCheckPeriod implements Serializable {
     }
 
     public String getPeriodDateRange() {
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yy");
         StringBuilder sb = new StringBuilder();
         sb.append(startDate.format(formatter));

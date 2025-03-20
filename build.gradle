@@ -14,6 +14,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     implementation files('lib/LGoodDatePicker-11.2.1.jar')
     implementation 'com.google.firebase:firebase-admin:9.1.1'
+    implementation 'org.jfree:jfreechart:1.5.5'
 }
 
 test {
