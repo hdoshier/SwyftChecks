@@ -3,6 +3,7 @@ package healthcheck.gui.mainpanels.healthchecks;
 import healthcheck.data.*;
 import healthcheck.data.firestore.Database;
 import healthcheck.gui.MainWindow;
+import healthcheck.gui.dialogs.HealthCheckGlobalSetDialog;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -11,6 +12,7 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 public class HealthCheckListPanel extends JPanel implements ActionListener {
@@ -24,6 +26,7 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
     JPanel managePanel;
     JScrollPane officePane;
     JTable officeTable;
+    private OfficeTableModel tableModel;
 
     // search criteria
     private JComboBox<String> periodSearchField;
@@ -32,7 +35,9 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
     private JComboBox<String> healthCheckStatusSearchField;
     private JCheckBox flaggedForReviewSearchField;
 
-
+    /**
+     * Constructor
+     */
     public HealthCheckListPanel(MainWindow parent) {
         this.parent = parent;
         this.setLayout(new GridBagLayout());
@@ -59,6 +64,9 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         this.buildOfficeListTable();
     }
 
+    /**
+     * Creates the search criteria panel above the list of offices.
+     */
     private void buildSearchPanel() {
         if (this.searchPanel != null) {
             this.remove(searchPanel);
@@ -103,8 +111,22 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
         JButton searchButton = new JButton("Search");
         searchButton.setActionCommand("search");
+        searchButton.setToolTipText("(Enter)");
         searchButton.addActionListener(this);
         buttonPanel.add(searchButton);
+
+        // Add ENTER key binding
+        searchPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+                "searchAction"
+        );
+        searchPanel.getActionMap().put("searchAction", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                searchButton.doClick();
+            }
+        });
+
         JButton resetButton = new JButton("Reset Filters");
         resetButton.setActionCommand("reset");
         resetButton.addActionListener(this);
@@ -116,6 +138,9 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         this.add(searchPanel, mainGbc);
     }
 
+    /**
+     * Helper method to create a standard field layout of search input.
+     */
     private JPanel buildSearchFieldHostPanel(String labelText, JComponent component) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel label = new JLabel(labelText);
@@ -124,6 +149,9 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         return panel;
     }
 
+    /**
+     * Search criteria fields configuration such as dropdown options.
+     */
     private void configureSearchCriteriaFields() {
         officeNameSearchField = new JTextField();
         officeNameSearchField.setPreferredSize(new Dimension(150, 20));
@@ -159,7 +187,9 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         flaggedForReviewSearchField.setSelected(false);
     }
 
-
+    /**
+     * Creates the manage buttons such as global set.
+     */
     private void buildManagePanel() {
         managePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         managePanel.setBackground(new Color(248, 248, 248));
@@ -178,40 +208,42 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         this.add(managePanel, mainGbc);
     }
 
+    /**
+     * Creates the JTable used for opening and reviewing health checks.
+     */
     public void buildOfficeListTable() {
-        // Create table with a custom model
-        HealthCheckListPanel.OfficeTableModel tableModel = new HealthCheckListPanel.OfficeTableModel();
-        officeTable = new JTable(tableModel);
-        officeTable.setRowHeight(25);
+        // Initialize tableModel and officeTable only once
+        if (tableModel == null) {
+            tableModel = new OfficeTableModel();
+            officeTable = new JTable(tableModel);
+            officeTable.setRowHeight(25);
 
+            // Customize button column
+            TableColumn buttonColumn = officeTable.getColumnModel().getColumn(0);
+            buttonColumn.setCellRenderer(new ButtonRenderer());
+            buttonColumn.setCellEditor(new ButtonEditor(new JCheckBox(), this));
+            buttonColumn.setPreferredWidth(2); // Adjust as needed
 
-        // Customize button column
-        TableColumn buttonColumn = officeTable.getColumnModel().getColumn(0);
-        buttonColumn.setCellRenderer(new HealthCheckListPanel.ButtonRenderer());
-        buttonColumn.setCellEditor(new HealthCheckListPanel.ButtonEditor(new JCheckBox(), this));
-
-        // Adjust the width of the button column
-        buttonColumn.setPreferredWidth(2); // Set the preferred width for column 0
-
-        if (officePane != null) {
-            this.remove(officePane);
+            if (officePane != null) {
+                this.remove(officePane);
+            }
+            officePane = new JScrollPane(officeTable);
+            this.add(officePane, mainGbc);
         }
 
-        // Wrap table in a scroll pane
-        officePane = new JScrollPane(officeTable);
-
-        // Populate table with office data
+        // Populate or refresh table data
+        tableModel.clear(); // Clear existing data
         filterHealthCheckList();
         for (HealthCheck check : healthCheckList) {
             tableModel.addHealthCheck(check);
         }
-
-        // Add the scroll pane to the panel
-        this.add(officePane, mainGbc);
         this.revalidate();
         this.repaint();
     }
 
+    /**
+     * Filters the offices available in the table based on the search criteria.
+     */
     private void filterHealthCheckList() {
         String nameFilter = officeNameSearchField.getText().toUpperCase();
         String assignedTo = (String) assignedToSearchField.getSelectedItem();
@@ -237,6 +269,9 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         }
     }
 
+    /**
+     * Helper method for filterHealthCheckList.
+     */
     private boolean satisfiesNameCheck(HealthCheck check, String filter) {
         if (filter == null) {
             return true;
@@ -250,6 +285,9 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         return false;
     }
 
+    /**
+     * Helper method for filterHealthCheckList.
+     */
     private boolean satisfiesAssignedToCheck(HealthCheck check, String assignedTo) {
         if (assignedTo.equals("All")) {
             return true;
@@ -257,6 +295,9 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         return check.getAssignedTo().equals(assignedTo);
     }
 
+    /**
+     * Helper method for filterHealthCheckList.
+     */
     private boolean satisfiesStatusCheck(HealthCheck check, String status) {
         if (status.equals("All")) {
             return true;
@@ -269,6 +310,9 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         return status.equals(checkStatus);
     }
 
+    /**
+     * Helper method for filterHealthCheckList.
+     */
     private boolean satisfiesFlagCheck(HealthCheck check, boolean flagged) {
         if (flagged == false) {
             return true;
@@ -276,13 +320,18 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         return check.isFlagedForLeadershipReview();
     }
 
-
+    /**
+     * Opens the health check for the selected office.
+     */
     private void loadHealthCheck(int selectedHealthCheck) {
         HealthCheck check = healthCheckList.get(selectedHealthCheck);
         currentHealthCheckIndex = selectedHealthCheck;
         parent.loadPanel(new HealthCheckPanel (parent, this, check));
     }
 
+    /**
+     * loads the next office in the list. Called from inside of the actual health check.
+     */
     public void loadNextHealthCheck() {
         int index = currentHealthCheckIndex + 1;
         if (index < 0 || index >= healthCheckList.size()) {
@@ -291,6 +340,9 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         loadHealthCheck(index);
     }
 
+    /**
+     * loads the previous office in the list. Called from inside of the actual health check.
+     */
     public void loadPreviousHealthCheck() {
         int index = currentHealthCheckIndex - 1;
         if (index < 0 || index >= healthCheckList.size()) {
@@ -307,10 +359,12 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         System.out.println(actionCommand);
 
         if (actionCommand.equals("addNew")) {
-
+            // TODO figure out if I want to implement this.
         }
         if (actionCommand.equals("globalSet")) {
-
+            HealthCheckGlobalSetDialog diag = new HealthCheckGlobalSetDialog(parent, this);
+            int[] selectedRows = officeTable.getSelectedRows();
+            diag.run(selectedRows, healthCheckList);
         }
         if (actionCommand.equals("search")) {
             buildOfficeListTable();
@@ -333,13 +387,6 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             setText(value != null ? value.toString() : "Edit");
             setPreferredSize(new Dimension(getPreferredSize().width + 10, getPreferredSize().height)); // Adjust button width
-            if (isSelected) {
-                setBackground(table.getSelectionBackground());
-                setForeground(table.getSelectionForeground());
-            } else {
-                setBackground(table.getBackground());
-                setForeground(table.getForeground());
-            }
             return this;
         }
     }
@@ -420,6 +467,23 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
             int status = check.getHealthCheckStatus();
             data.add(new Object[]{"Edit", office.getOfficeCode(), office.getOfficeName(), MyGlobalVariables.HEALTH_CHECK_STATUS_ARRAY[status], check.getAssignedTo()});
             fireTableRowsInserted(data.size() - 1, data.size() - 1);
+        }
+
+        public void updateHealthCheck(int row, HealthCheck check) {
+            Office office = check.getOffice();
+            int status = check.getHealthCheckStatus();
+            data.set(row, new Object[]{"Edit", office.getOfficeCode(), office.getOfficeName(),
+                    MyGlobalVariables.HEALTH_CHECK_STATUS_ARRAY[status], check.getAssignedTo()});
+            fireTableRowsUpdated(row, row);
+        }
+
+        // Clear all data
+        public void clear() {
+            int oldSize = data.size();
+            data.clear();
+            if (oldSize > 0) {
+                fireTableRowsDeleted(0, oldSize - 1);
+            }
         }
     }
 }

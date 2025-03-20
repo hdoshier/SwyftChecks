@@ -28,7 +28,7 @@ public class WriteData {
         data.put("clientGeneralSchedulesConfigured", check.getClientGeneralSchedulesConfigured());
         data.put("lastBillingProcessDate", check.getLastBillingProcessDate().toString());
         data.put("lastPayrollProcessDate", check.getLastPayrollProcessDate().toString());
-        data.put("repeatAdjustments", check.isRepeatAdjustments());
+        //data.put("repeatAdjustments", check.isRepeatAdjustments());
         data.put("generalNotes", check.getGeneralNotes());
         data.put("assignedTo", check.getAssignedTo());
         data.put("reviewPerformedBy", check.getReviewPerformedBy());

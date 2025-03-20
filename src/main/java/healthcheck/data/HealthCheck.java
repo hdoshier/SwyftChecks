@@ -21,7 +21,8 @@ public class HealthCheck implements Serializable {
     private LocalDate lastBillingProcessDate = null;
     private LocalDate lastPayrollProcessDate = null;
     private LocalDate checkCompletionDate;
-    private boolean repeatAdjustments = false;
+    private boolean repeatingBillingAdjustments = false;
+    private boolean repeatingPayrollAdjustments = false;
     private String generalNotes = "";
     private String assignedTo = "Unassigned";
     private String reviewPerformedBy = "";
@@ -29,6 +30,8 @@ public class HealthCheck implements Serializable {
     private int healthCheckStatus = 0;
     private boolean flagedForLeadershipReview = false;
     private String emailTemplateSent;
+    private String growthNotes = "";
+    private int priorMonthShiftCount = 0;
 
     public HealthCheck(Office officeCode) {
         this.office = officeCode;
@@ -40,6 +43,24 @@ public class HealthCheck implements Serializable {
 
 
     // getters and setters
+
+
+    public int getPriorMonthShiftCount() {
+        return priorMonthShiftCount;
+    }
+
+    public void setPriorMonthShiftCount(int priorMonthShiftCount) {
+        this.priorMonthShiftCount = priorMonthShiftCount;
+    }
+
+    public String getGrowthNotes() {
+        return growthNotes;
+    }
+
+    public void setGrowthNotes(String growthNotes) {
+        this.growthNotes = growthNotes;
+    }
+
     public String getOfficeCode() {
         return officeCode;
     }
@@ -188,12 +209,20 @@ public class HealthCheck implements Serializable {
         this.lastPayrollProcessDate = lastPayrollProcessDate;
     }
 
-    public boolean isRepeatAdjustments() {
-        return repeatAdjustments;
+    public boolean isRepeatingBillingAdjustments() {
+        return repeatingBillingAdjustments;
     }
 
-    public void setRepeatAdjustments(boolean repeatAdjustments) {
-        this.repeatAdjustments = repeatAdjustments;
+    public void setRepeatingBillingAdjustments(boolean repeatAdjustments) {
+        this.repeatingBillingAdjustments = repeatAdjustments;
+    }
+
+    public boolean isRepeatingPayrollAdjustments() {
+        return repeatingPayrollAdjustments;
+    }
+
+    public void setRepeatingPayrollAdjustments(boolean repeatAdjustments) {
+        this.repeatingPayrollAdjustments = repeatAdjustments;
     }
 
     public String getGeneralNotes() {
@@ -226,5 +255,10 @@ public class HealthCheck implements Serializable {
 
     public void setAssignedTo(String assignedTo) {
         this.assignedTo = assignedTo;
+        if (assignedTo.equals("Unassigned")) {
+            healthCheckStatus = 0;
+        } else {
+            healthCheckStatus = 1;
+        }
     }
 }

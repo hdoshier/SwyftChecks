@@ -2,10 +2,7 @@ package healthcheck.gui.mainpanels.healthchecks;
 
 import com.github.lgooddatepicker.components.DatePicker;
 import healthcheck.data.*;
-import healthcheck.data.firestore.Database;
-import healthcheck.data.firestore.ReadData;
 import healthcheck.gui.MainWindow;
-import healthcheck.gui.mainpanels.offices.OfficePanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,6 +12,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -46,6 +44,7 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
     private JSpinner activeClientsField;
     private JSpinner activeCaregiversField;
     private JSpinner expiredLicenseCountField;
+    private JSpinner priorMonthShiftCount;
     private DatePicker lastPayrollProcessDateField;
     private JSpinner clientGeneralSchedulesConfiguredField;
     private DatePicker lastLoginField;
@@ -54,9 +53,11 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
     private DatePicker lastBillingProcessDateField;
     private JCheckBox shiftsInDifferentStatusesCheckBox;
     private JCheckBox caregiversUsingTheAppCheckBox;
-    private JCheckBox repeatAdjustmentsCheckBox;
+    private JCheckBox repeatBillingAdjustmentsCheckBox;
+    private JCheckBox repeatPayrollAdjustmentsCheckBox;
     private JTextArea generalNotesArea;
     private JTextArea contactReasonField;
+    private JTextArea growthNotesField;
 
 
     public HealthCheckPanel(MainWindow mainWindow, HealthCheckListPanel parent, HealthCheck check) {
@@ -352,7 +353,8 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         JPanel bodyPanel = new JPanel();
         bodyPanel.setLayout(new BoxLayout(bodyPanel, BoxLayout.Y_AXIS));
         bodyPanel.add(new JLabel("Email Body"));
-        bodyArea = new JTextArea("Select template or write custom email.");
+        bodyArea = new JTextArea();
+        bodyArea.setToolTipText("Select Template");
         bodyArea.setLineWrap(true);
         bodyArea.setRows(15);
         bodyArea.setColumns(20);
@@ -423,6 +425,8 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
     }
 
     private JPanel createDataPanel() {
+        JLabel daysSinceLabel = new JLabel(getDateDifference(check.getLastLogin()));
+
         JPanel panel = new JPanel(new GridBagLayout());
         panelFormatter(panel);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -451,12 +455,19 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         panel.add(dataCollectionPanel("Clients Without a General Schedule", clientGeneralSchedulesConfiguredField), gbc);
 
         gbc.gridy = 4;
-        JComboBox<Integer> scheduleGenerationMethodComboBox;
+        priorMonthShiftCount = new JSpinner();
+        priorMonthShiftCount.setValue(check.getPriorMonthShiftCount());
+        panel.add(dataCollectionPanel("Number of Shifts in Prior Month", priorMonthShiftCount), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
         lastLoginField = new DatePicker();
         lastLoginField.setDate(check.getLastLogin());
+        lastLoginField.addDateChangeListener(e -> {
+            if (lastLoginField.getDate() != null) {
+                daysSinceLabel.setText(getDateDifference(lastLoginField.getDate()));
+            }
+        });
         panel.add(dataCollectionPanel("Most Recent Login Date", lastLoginField), gbc);
 
         gbc.gridy = 1;
@@ -483,30 +494,43 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
 
         gbc.gridx = 2;
         gbc.gridy = 0;
+        panel.add(dataCollectionPanel("Time Since Last Login", daysSinceLabel), gbc);
+        gbc.gridy = 1;
         shiftsInDifferentStatusesCheckBox = new JCheckBox();
         shiftsInDifferentStatusesCheckBox.setSelected(check.isShiftsInDifferentStatuses());
         panel.add(dataCollectionPanel("Shifts in Different Statuses", shiftsInDifferentStatusesCheckBox), gbc);
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         caregiversUsingTheAppCheckBox = new JCheckBox();
         caregiversUsingTheAppCheckBox.setSelected(check.isCaregiversUsingTheApp());
         panel.add(dataCollectionPanel("Caregivers Actively Using the App", caregiversUsingTheAppCheckBox), gbc);
-        gbc.gridy = 2;
-        repeatAdjustmentsCheckBox = new JCheckBox();
-        repeatAdjustmentsCheckBox.setSelected(check.isRepeatAdjustments());
-        panel.add(dataCollectionPanel("Repeat Adjustments being Made", repeatAdjustmentsCheckBox), gbc);
+        gbc.gridy = 3;
+        repeatBillingAdjustmentsCheckBox = new JCheckBox();
+        repeatBillingAdjustmentsCheckBox.setSelected(check.isRepeatingBillingAdjustments());
+        panel.add(dataCollectionPanel("Repeat Adjustments being Made", repeatBillingAdjustmentsCheckBox), gbc);
+        gbc.gridy = 4;
+        repeatPayrollAdjustmentsCheckBox = new JCheckBox();
+        repeatPayrollAdjustmentsCheckBox.setSelected(check.isRepeatingPayrollAdjustments());
+        panel.add(dataCollectionPanel("Repeat Adjustments being Made", repeatPayrollAdjustmentsCheckBox), gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 5;
+        gbc.gridwidth = 3;
         generalNotesArea = new JTextArea(check.getGeneralNotes());
         generalNotesArea.setLineWrap(true);
+        generalNotesArea.setRows(2);
         panel.add(dataCollectionPanel("General Notes", generalNotesArea), gbc);
 
-        gbc.gridx = 1;
-        gbc.gridwidth = 2;
-        gbc.gridy = 5;
+        gbc.gridy = 6;
         contactReasonField = new JTextArea(check.getContactReason());
         contactReasonField.setLineWrap(true);
+        contactReasonField.setRows(2);
         panel.add(dataCollectionPanel("Contact Reason", contactReasonField), gbc);
+
+        gbc.gridy = 7;
+        growthNotesField = new JTextArea(check.getGrowthNotes());
+        growthNotesField.setLineWrap(true);
+        growthNotesField.setRows(2);
+        panel.add(dataCollectionPanel("What can be done to help this office grow?", growthNotesField), gbc);
 
 
         return panel;
@@ -593,12 +617,15 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         check.setClientGeneralSchedulesConfigured((int) clientGeneralSchedulesConfiguredField.getValue());
         check.setShiftsInDifferentStatuses(shiftsInDifferentStatusesCheckBox.isSelected());
         check.setCaregiversUsingTheApp(caregiversUsingTheAppCheckBox.isSelected());
-        check.setRepeatAdjustments(repeatAdjustmentsCheckBox.isSelected());
+        check.setRepeatingPayrollAdjustments(repeatPayrollAdjustmentsCheckBox.isSelected());
+        check.setRepeatingBillingAdjustments(repeatBillingAdjustmentsCheckBox.isSelected());
         check.setGeneralNotes(generalNotesArea.getText());
         check.setContactReason(contactReasonField.getText());
+        check.setGrowthNotes(growthNotesField.getText());
         check.setFlagedForLeadershipReview(flagForLeadershipCheckBox.isSelected());
         check.setAssignedTo((String) assignedToField.getSelectedItem());
         check.setHealthCheckStatus(checkStatusField.getSelectedIndex());
+        check.setPriorMonthShiftCount((int) priorMonthShiftCount.getValue());
 
         LocalDate date = lastLoginField.getDate();
         if (date != null) {
@@ -629,15 +656,13 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         if (date != null) {
             check.setLastScheduleDate(date);
         }
-        // TODO write to Database
+        // TODO write to Firestore Database
     }
 
     private void panelFormatter(JPanel panel) {
         panel.setBackground(new Color(248, 248, 248));
         panel.setBorder(BorderFactory.createLineBorder(Color.black));
     }
-
-
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -673,5 +698,54 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
             parent.buildOfficeListTable();
             mainWindow.loadPanel(parent);
         }
+    }
+
+    /**
+     * Formats the difference between a given date and today in one of three formats:
+     * "x years, x months", "x months, x days", or "x days" with proper pluralization.
+     *
+     * @param pastDate the date to compare against today's date
+     * @return a string representing the time difference
+     */
+    public static String getDateDifference(LocalDate pastDate) {
+        if (pastDate == null) {
+            return "No activity recorded.";
+        }
+
+        // Get current date
+        LocalDate today = LocalDate.now();
+
+        // Calculate period between dates
+        Period period = Period.between(pastDate, today);
+
+        // Extract years, months, and days
+        int years = period.getYears();
+        int months = period.getMonths() + (years * 12); // Convert years to months if needed
+        int days = period.getDays();
+
+        // Total days for edge cases
+        long totalDays = pastDate.until(today).getDays();
+
+        // Case 1: More than a year
+        if (years > 0) {
+            int remainingMonths = months % 12; // Months after full years
+            String yearsStr = years + " year" + (years != 1 ? "s" : "");
+            String monthsStr = remainingMonths + " month" + (remainingMonths != 1 ? "s" : "");
+            return yearsStr + ", " + monthsStr;
+        }
+
+        // Case 2: More than a month but less than a year
+        if (months > 0) {
+            // Recalculate remaining days more accurately
+            LocalDate afterMonths = pastDate.plusMonths(months);
+            int remainingDays = (int) afterMonths.until(today).getDays();
+            String monthsStr = months + " month" + (months != 1 ? "s" : "");
+            String daysStr = remainingDays + " day" + (remainingDays != 1 ? "s" : "");
+            return monthsStr + ", " + daysStr;
+        }
+
+        // Case 3: Only days
+        String daysStr = totalDays + " day" + (totalDays != 1 ? "s" : "");
+        return daysStr;
     }
 }

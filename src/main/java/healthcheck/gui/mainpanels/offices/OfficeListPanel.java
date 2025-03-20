@@ -13,6 +13,7 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -108,9 +109,23 @@ public class OfficeListPanel extends JPanel implements ActionListener {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
         JButton searchButton = new JButton("Search");
+        searchButton.setToolTipText("(Enter)");
         searchButton.setActionCommand("search");
         searchButton.addActionListener(this);
         buttonPanel.add(searchButton);
+
+        // Add ENTER key binding
+        searchPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+                "searchAction"
+        );
+        searchPanel.getActionMap().put("searchAction", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                searchButton.doClick();
+            }
+        });
+
         JButton resetButton = new JButton("Reset Filters");
         resetButton.setActionCommand("reset");
         resetButton.addActionListener(this);
