@@ -276,8 +276,12 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         if (filter == null) {
             return true;
         }
+        Office office = db.getOffice(check.getOfficeCode());
 
-        Office office = check.getOffice();
+        if (office == null) {
+            return true;
+        }
+
         if (office.getOfficeCode().contains(filter) || office.getOfficeName().toUpperCase().contains(filter)) {
             return true;
         }
@@ -463,18 +467,10 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         }
 
         public void addHealthCheck(HealthCheck check) {
-            Office office = check.getOffice();
+            Office office = Database.getInstance().getOffice(check.getOfficeCode());
             int status = check.getHealthCheckStatus();
             data.add(new Object[]{"Edit", office.getOfficeCode(), office.getOfficeName(), MyGlobalVariables.HEALTH_CHECK_STATUS_ARRAY[status], check.getAssignedTo()});
             fireTableRowsInserted(data.size() - 1, data.size() - 1);
-        }
-
-        public void updateHealthCheck(int row, HealthCheck check) {
-            Office office = check.getOffice();
-            int status = check.getHealthCheckStatus();
-            data.set(row, new Object[]{"Edit", office.getOfficeCode(), office.getOfficeName(),
-                    MyGlobalVariables.HEALTH_CHECK_STATUS_ARRAY[status], check.getAssignedTo()});
-            fireTableRowsUpdated(row, row);
         }
 
         // Clear all data

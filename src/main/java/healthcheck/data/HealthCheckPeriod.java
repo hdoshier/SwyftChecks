@@ -24,7 +24,7 @@ public class HealthCheckPeriod implements Serializable {
         for (Office office : officeList) {
             // Only active offices are added to the health check list
             if (office.isActiveOffice()) {
-                HealthCheck check = new HealthCheck(office);
+                HealthCheck check = new HealthCheck(office.getOfficeCode());
                 healthCheckList.add(check);
             }
         }

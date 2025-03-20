@@ -9,44 +9,15 @@ import java.util.*;
 
 public class WriteData {
 
-    public static void writeHealthCheck(HealthCheck check) {
-        HashMap<String, Object> data = new HashMap<>(22);
-
-        //enter data into map
-        data.put("office", check.getOfficeCode());
-        data.put("activeClients", check.getActiveClients());
-        data.put("activeCaregivers", check.getActiveCaregivers());
-        data.put("contactReason", check.getContactReason());
-        data.put("previousContactReason", check.getPreviousContactReason());
-        data.put("lastLogin", check.getLastLogin().toString());
-        data.put("oldestTaskDate", check.getOldestTaskDate().toString());
-        data.put("expiredLicenseCount", check.getExpiredLicenseCount());
-        data.put("lastScheduleDate", check.getLastScheduleDate().toString());
-        data.put("scheduleGenerationMethod", check.getScheduleGenerationMethod());
-        data.put("shiftsInDifferentStatuses", check.isShiftsInDifferentStatuses());
-        data.put("caregiversUsingTheApp", check.isCaregiversUsingTheApp());
-        data.put("clientGeneralSchedulesConfigured", check.getClientGeneralSchedulesConfigured());
-        data.put("lastBillingProcessDate", check.getLastBillingProcessDate().toString());
-        data.put("lastPayrollProcessDate", check.getLastPayrollProcessDate().toString());
-        //data.put("repeatAdjustments", check.isRepeatAdjustments());
-        data.put("generalNotes", check.getGeneralNotes());
-        data.put("assignedTo", check.getAssignedTo());
-        data.put("reviewPerformedBy", check.getReviewPerformedBy());
-        data.put("followUpPerformedBy", check.getHealthCheckCompletedBy());
-        data.put("healthCheckStatus", check.getHealthCheckStatus());
-
-
-
-    }
-
     public static void saveOffice(Office office) {
         // pushes the data to the database
         Firestore db = Database.getFirestore();
+        // ensures the cached database has the most recent changes made by the user.
         Database.getInstance().replaceOffice(office);
         if (office.isActiveOffice()) {
-            db.collection("offices").document(office.getOfficeCode()).set(packageOffice(office));
+            db.collection("offices").document(office.getOfficeCode()).set(office.packageOffice());
         } else {
-            db.collection("inactiveOffices").document(office.getOfficeCode()).set(packageOffice(office));
+            db.collection("inactiveOffices").document(office.getOfficeCode()).set(office.packageOffice());
         }
     }
 
@@ -62,39 +33,12 @@ public class WriteData {
         if (office.isActiveOffice()) {
             // Move office from "inactiveOffices" to "offices"
             db.collection("inactiveOffices").document(office.getOfficeCode()).delete();
-            db.collection("offices").document(office.getOfficeCode()).set(packageOffice(office));
+            db.collection("offices").document(office.getOfficeCode()).set(office.packageOffice());
         } else {
             // Move office from "offices" to "inactiveOffices"
             db.collection("offices").document(office.getOfficeCode()).delete();
-            db.collection("inactiveOffices").document(office.getOfficeCode()).set(packageOffice(office));
+            db.collection("inactiveOffices").document(office.getOfficeCode()).set(office.packageOffice());
         }
-    }
-
-    private static HashMap<String, Object> packageOffice (Office office) {
-        HashMap<String, Object> data = new HashMap<>(12);
-
-        //all office data to be written
-        data.put("officeCode", office.getOfficeCode());
-        data.put("officeName", office.getOfficeName());
-
-        LocalDate date = office.getExecAgreementDate();
-        if (date != null) {
-            data.put("execAgreementDate", date.toString());
-        }
-
-        data.put("officeOwner", office.getOfficeOwner());
-        data.put("officeOwnerEmail", office.getOfficeOwnerEmail());
-        data.put("officePrimaryContactPerson", office.getOfficePrimaryContactPerson());
-        data.put("officePrimaryContactEmail", office.getOfficePrimaryContactEmail());
-        data.put("officePrimaryContactPhone", office.getOfficePrimaryContactPhone());
-        data.put("leadershipNotes", office.getLeadershipNotes());
-        data.put("generalNotes", office.getGeneralNotes());
-        data.put("contactNotes", office.getContactNotes());
-        data.put("trainingStatus", office.getTrainingStatus());
-        data.put("billableHourHistory", office.getBillableHourHistory());
-        data.put("activeOffice", office.isActiveOffice());
-
-        return data;
     }
 
     /**

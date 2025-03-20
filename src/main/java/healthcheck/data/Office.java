@@ -66,6 +66,35 @@ public class Office {
         return keys;
     }
 
+
+
+    public HashMap<String, Object> packageOffice () {
+        HashMap<String, Object> data = new HashMap<>(12);
+
+        //all office data to be written
+        data.put("officeCode", officeCode);
+        data.put("officeName", officeName);
+
+        LocalDate date = execAgreementDate;
+        if (date != null) {
+            data.put("execAgreementDate", date.toString());
+        }
+
+        data.put("officeOwner", officeOwner);
+        data.put("officeOwnerEmail", officeOwnerEmail);
+        data.put("officePrimaryContactPerson", officePrimaryContactPerson);
+        data.put("officePrimaryContactEmail", officePrimaryContactEmail);
+        data.put("officePrimaryContactPhone", officePrimaryContactPhone);
+        data.put("leadershipNotes", leadershipNotes);
+        data.put("generalNotes", generalNotes);
+        data.put("contactNotes", contactNotes);
+        data.put("trainingStatus", trainingStatus);
+        data.put("billableHourHistory", billableHourHistory);
+        data.put("activeOffice", activeOffice);
+
+        return data;
+    }
+
     // getters and setters
 
 

@@ -62,6 +62,15 @@ public class Database {
         officeList.addAll(ReadData.getInactiveOfficeList());
     }
 
+    public Office getOffice(String officeCode) {
+        for (Office i : officeList) {
+            if (i.getOfficeCode().equals(officeCode)) {
+                return i;
+            }
+        }
+        return null;
+    }
+
     public void replaceOffice(Office office) {
         for (int i = 0; i < officeList.size(); i++) {
             if (officeList.get(i).equals(office)) {

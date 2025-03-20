@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.time.LocalDate;
 
 public class HealthCheck implements Serializable {
-    private Office office;
     private String officeCode;
     private int activeClients = 0;
     private int activeCaregivers = 0;
@@ -25,26 +24,17 @@ public class HealthCheck implements Serializable {
     private boolean repeatingPayrollAdjustments = false;
     private String generalNotes = "";
     private String assignedTo = "Unassigned";
-    private String reviewPerformedBy = "";
-    private String healthCheckCompletedBy = "";
     private int healthCheckStatus = 0;
     private boolean flagedForLeadershipReview = false;
-    private String emailTemplateSent;
     private String growthNotes = "";
     private int priorMonthShiftCount = 0;
 
-    public HealthCheck(Office officeCode) {
-        this.office = officeCode;
-        this.officeCode = officeCode.getOfficeCode();
+    public HealthCheck(String officeCode) {
+        this.officeCode = officeCode;
         //TODO automatomate previousContactReason
     }
 
-    public Office getOffice() {return office;}
-
-
     // getters and setters
-
-
     public int getPriorMonthShiftCount() {
         return priorMonthShiftCount;
     }
@@ -71,14 +61,6 @@ public class HealthCheck implements Serializable {
 
     public void setCheckCompletionDate(LocalDate checkCompletionDate) {
         this.checkCompletionDate = checkCompletionDate;
-    }
-
-    public String getEmailTemplateSent() {
-        return emailTemplateSent;
-    }
-
-    public void setEmailTemplateSent(String emailTemplateSent) {
-        this.emailTemplateSent = emailTemplateSent;
     }
 
     public boolean isFlagedForLeadershipReview() {
@@ -231,22 +213,6 @@ public class HealthCheck implements Serializable {
 
     public void setGeneralNotes(String generalNotes) {
         this.generalNotes = generalNotes;
-    }
-
-    public String getReviewPerformedBy() {
-        return reviewPerformedBy;
-    }
-
-    public void setReviewPerformedBy(String reviewPerformedBy) {
-        this.reviewPerformedBy = reviewPerformedBy;
-    }
-
-    public String getHealthCheckCompletedBy() {
-        return healthCheckCompletedBy;
-    }
-
-    public void setHealthCheckCompletedBy(String healthCheckCompletedBy) {
-        this.healthCheckCompletedBy = healthCheckCompletedBy;
     }
 
     public String getAssignedTo() {
