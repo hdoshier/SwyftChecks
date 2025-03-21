@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class HealthCheckPeriod implements Serializable {
     private LocalDate startDate;
@@ -16,6 +17,19 @@ public class HealthCheckPeriod implements Serializable {
         this.startDate = startDate;
         this.endDate = endDate;
         this.addHealthChecks();
+    }
+
+    public HashMap<String, Object> packagePeriod() {
+        HashMap<String, Object> periodData = new HashMap<>();
+        periodData.put("startDate", startDate.toString());
+        periodData.put("endDate", endDate.toString());
+
+        HashMap<String, HashMap<String, Object>> healthChecksMap = new HashMap<>();
+        for (HealthCheck i : healthCheckList) {
+            healthChecksMap.put(i.getOfficeCode(), i.packageHealthCheck());
+        }
+        periodData.put("healthChecks", healthChecksMap);
+        return periodData;
     }
 
     private void addHealthChecks() {

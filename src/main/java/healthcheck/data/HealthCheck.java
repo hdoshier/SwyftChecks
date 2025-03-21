@@ -2,13 +2,13 @@ package healthcheck.data;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.HashMap;
 
 public class HealthCheck implements Serializable {
     private String officeCode;
     private int activeClients = 0;
     private int activeCaregivers = 0;
     private String contactReason = "";
-    private String previousContactReason = "";
     private LocalDate lastLogin = null;
     private LocalDate oldestTaskDate = null;
     private int expiredLicenseCount = 0;
@@ -19,7 +19,6 @@ public class HealthCheck implements Serializable {
     private int clientGeneralSchedulesConfigured = 0;
     private LocalDate lastBillingProcessDate = null;
     private LocalDate lastPayrollProcessDate = null;
-    private LocalDate checkCompletionDate;
     private boolean repeatingBillingAdjustments = false;
     private boolean repeatingPayrollAdjustments = false;
     private String generalNotes = "";
@@ -31,7 +30,34 @@ public class HealthCheck implements Serializable {
 
     public HealthCheck(String officeCode) {
         this.officeCode = officeCode;
-        //TODO automatomate previousContactReason
+        //TODO automate previousContactReason
+    }
+
+    public HashMap<String, Object> packageHealthCheck() {
+        HashMap<String, Object> checkData = new HashMap<>();
+        checkData.put("officeCode", officeCode);
+        checkData.put("activeClients", activeClients);
+        checkData.put("activeCaregivers", activeCaregivers);
+        checkData.put("contactReason", contactReason);
+        checkData.put("lastLogin", lastLogin!= null ? lastLogin.toString() : null);
+        checkData.put("oldestTaskDate", oldestTaskDate != null ? oldestTaskDate.toString() : null);
+        checkData.put("expiredLicenseCount", expiredLicenseCount);
+        checkData.put("lastScheduleDate", lastScheduleDate != null ? lastScheduleDate.toString() : null);
+        checkData.put("scheduleGenerationMethod", scheduleGenerationMethod);
+        checkData.put("shiftsInDifferentStatuses", shiftsInDifferentStatuses);
+        checkData.put("caregiversUsingTheApp", caregiversUsingTheApp);
+        checkData.put("clientGeneralSchedulesConfigured", clientGeneralSchedulesConfigured);
+        checkData.put("lastBillingProcessDate", lastBillingProcessDate != null ? lastBillingProcessDate.toString() : null);
+        checkData.put("lastPayrollProcessDate", lastPayrollProcessDate != null ? lastPayrollProcessDate.toString() : null);
+        checkData.put("repeatingBillingAdjustments", repeatingBillingAdjustments);
+        checkData.put("repeatingPayrollAdjustments", repeatingPayrollAdjustments);
+        checkData.put("generalNotes", generalNotes);
+        checkData.put("assignedTo", assignedTo);
+        checkData.put("healthCheckStatus", healthCheckStatus);
+        checkData.put("flagedForLeadershipReview", flagedForLeadershipReview);
+        checkData.put("growthNotes", generalNotes);
+        checkData.put("priorMonthShiftCount", priorMonthShiftCount);
+        return checkData;
     }
 
     // getters and setters
@@ -53,14 +79,6 @@ public class HealthCheck implements Serializable {
 
     public String getOfficeCode() {
         return officeCode;
-    }
-
-    public LocalDate getCheckCompletionDate() {
-        return checkCompletionDate;
-    }
-
-    public void setCheckCompletionDate(LocalDate checkCompletionDate) {
-        this.checkCompletionDate = checkCompletionDate;
     }
 
     public boolean isFlagedForLeadershipReview() {
@@ -101,14 +119,6 @@ public class HealthCheck implements Serializable {
 
     public void setContactReason(String contactReason) {
         this.contactReason = contactReason;
-    }
-
-    public String getPreviousContactReason() {
-        return previousContactReason;
-    }
-
-    public void setPreviousContactReason(String previousContactReason) {
-        this.previousContactReason = previousContactReason;
     }
 
     public LocalDate getLastLogin() {

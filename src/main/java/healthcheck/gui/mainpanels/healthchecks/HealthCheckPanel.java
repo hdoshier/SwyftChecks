@@ -2,6 +2,7 @@ package healthcheck.gui.mainpanels.healthchecks;
 
 import com.github.lgooddatepicker.components.DatePicker;
 import healthcheck.data.*;
+import healthcheck.data.firestore.Database;
 import healthcheck.gui.MainWindow;
 
 import javax.swing.*;
@@ -63,7 +64,7 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
     public HealthCheckPanel(MainWindow mainWindow, HealthCheckListPanel parent, HealthCheck check) {
         this.parent = parent;
         this.check = check;
-        this.office = check.getOffice();
+        this.office = Database.getInstance().getOffice(check.getOfficeCode());
         this.mainWindow = mainWindow;
         this.setLayout(new GridBagLayout());
         this.setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
@@ -680,7 +681,6 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
                 String dateString = date.format(formatter);
                 body =  body.replaceAll("<lastLoginDate>", dateString);
             }
-            check.setEmailTemplateSent((String) emailTemplateBox.getSelectedItem());
             saveHealthCheck();
             Email.prepEmail(contactName.getText(), contactEmail.getText(), subjectTextField.getText(), body);
         }
