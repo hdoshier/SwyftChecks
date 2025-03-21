@@ -1,9 +1,7 @@
 package healthcheck.gui.dialogs;
 
-import healthcheck.data.HealthCheck;
-import healthcheck.data.MyGlobalVariables;
-import healthcheck.data.MySettings;
-import healthcheck.data.Office;
+import healthcheck.data.*;
+import healthcheck.data.firestore.WriteData;
 import healthcheck.gui.mainpanels.healthchecks.HealthCheckListPanel;
 import healthcheck.gui.mainpanels.offices.OfficeListPanel;
 
@@ -17,6 +15,7 @@ public class HealthCheckGlobalSetDialog extends JDialog implements ActionListene
     private GridBagConstraints mainGbc;
     private HealthCheckListPanel hostPanel;
     private ArrayList<HealthCheck> checkList;
+    private HealthCheckPeriod period;
     private int[] indexList;
 
     //global set options
@@ -64,6 +63,7 @@ public class HealthCheckGlobalSetDialog extends JDialog implements ActionListene
             for (int i : indexList) {
                 HealthCheck check = checkList.get(i);
                 check.setAssignedTo((String) assignedToBox.getSelectedItem());
+                WriteData.updateHealthCheckInFirestore(period, check);
             }
             hostPanel.buildOfficeListTable();
         }
@@ -72,9 +72,10 @@ public class HealthCheckGlobalSetDialog extends JDialog implements ActionListene
 
 
 
-    public void run(int[] indexList, ArrayList<HealthCheck> checkList) {
+    public void run(int[] indexList, ArrayList<HealthCheck> checkList, HealthCheckPeriod period) {
         this.indexList = indexList;
         this.checkList = checkList;
+        this.period = period;
         this.setVisible(true);
     }
 }

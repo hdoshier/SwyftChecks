@@ -3,6 +3,7 @@ package healthcheck.gui.mainpanels.healthchecks;
 import com.github.lgooddatepicker.components.DatePicker;
 import healthcheck.data.*;
 import healthcheck.data.firestore.Database;
+import healthcheck.data.firestore.WriteData;
 import healthcheck.gui.MainWindow;
 
 import javax.swing.*;
@@ -687,6 +688,7 @@ public class HealthCheckPanel extends JPanel implements ActionListener {
         if (actionCommand.equals("save")) {
             System.out.println(actionCommand);
             saveHealthCheck();
+            WriteData.updateHealthCheckInFirestore(parent.getPeriod(), check);
         }
         if (actionCommand.equals("next")) {
             parent.loadNextHealthCheck();

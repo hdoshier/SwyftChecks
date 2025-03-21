@@ -356,6 +356,10 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         loadHealthCheck(index);
     }
 
+    public HealthCheckPeriod getPeriod() {
+        return period;
+    }
+
 
 
     @Override
@@ -375,7 +379,7 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         if (actionCommand.equals("globalSet")) {
             HealthCheckGlobalSetDialog diag = new HealthCheckGlobalSetDialog(parent, this);
             int[] selectedRows = officeTable.getSelectedRows();
-            diag.run(selectedRows, healthCheckList);
+            diag.run(selectedRows, healthCheckList, period);
         }
         if (actionCommand.equals("search")) {
             buildOfficeListTable();

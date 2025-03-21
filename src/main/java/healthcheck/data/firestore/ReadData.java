@@ -168,9 +168,11 @@ public class ReadData {
                         // Create HealthCheck object
                         healthCheckList.add(createHealthCheckFromData(checkData, officeCode));
                     }
+                    healthCheckList.sort((hc1, hc2) -> hc1.getOfficeCode().compareTo(hc2.getOfficeCode()));
                     // Replace the default healthCheckList with the one from Firestore
                     period.getHealthCheckList().clear();
                     period.getHealthCheckList().addAll(healthCheckList);
+
                 }
 
                 list.add(period);
