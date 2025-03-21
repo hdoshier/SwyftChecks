@@ -42,14 +42,11 @@ public class NavigationPanel extends JPanel {
         navigationPanel.setLayout(new BoxLayout(navigationPanel, BoxLayout.Y_AXIS));
 
         // Add menu items
-        addNavItem(navigationPanel, "Home", false);
-        addNavItem(navigationPanel, "Offices", true);
+        addNavItem(navigationPanel, "Home", true);
+        addNavItem(navigationPanel, "Offices", false);
         addNavItem(navigationPanel, "Health Checks", false);
         addNavItem(navigationPanel, "Reports", false);
         addNavItem(navigationPanel, "Settings", false);
-
-
-
     }
 
     private void addNavItem(JPanel panel, String name, boolean isActive) {

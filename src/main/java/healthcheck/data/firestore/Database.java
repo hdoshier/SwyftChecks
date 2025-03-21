@@ -20,16 +20,13 @@ public class Database {
     private ArrayList<Office> officeList;
     private ArrayList<HealthCheckPeriod> healthCheckPeriodList;
     private MySettings settings;
-    private boolean inactiveOfficesLoaded;
-    private LocalDate databaseCreationDate = LocalDate.now();
 
     private Database() {
         instance = this;
         firestore = initializeFirebase();
+        settings = MySettings.getInstance();
         officeList = ReadData.getActiveOfficeList();
         healthCheckPeriodList = new ArrayList<>();
-        settings = MySettings.getInstance();
-        inactiveOfficesLoaded = false;
     }
 
     public static Database getInstance() {
@@ -40,8 +37,14 @@ public class Database {
     }
 
     public HealthCheckPeriod addNewHealthCheckPeriod(LocalDate start, LocalDate end) {
+        for (HealthCheckPeriod i : healthCheckPeriodList) {
+            if (!start.isAfter(i.getStartDate())) {
+                return null;
+            }
+        }
         HealthCheckPeriod period = new HealthCheckPeriod(start, end);
         healthCheckPeriodList.addFirst(period);
+        //WriteData.createNewHealthCheckPeriod(period);
         return period;
     }
 
@@ -50,16 +53,6 @@ public class Database {
         office.setActiveOffice(!office.isActiveOffice());
         System.out.println(office.isActiveOffice());
         WriteData.switchOfficeCollection(office);
-    }
-
-    public void loadInactiveOffices() {
-        // skip if the inactive offices have already been added to the officeList
-        if (inactiveOfficesLoaded) {
-            return;
-        }
-
-        inactiveOfficesLoaded = true;
-        officeList.addAll(ReadData.getInactiveOfficeList());
     }
 
     public Office getOffice(String officeCode) {

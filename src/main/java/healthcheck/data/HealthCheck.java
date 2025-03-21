@@ -19,6 +19,7 @@ public class HealthCheck implements Serializable {
     private int clientGeneralSchedulesConfigured = 0;
     private LocalDate lastBillingProcessDate = null;
     private LocalDate lastPayrollProcessDate = null;
+    private LocalDate checkCompletionDate = null;
     private boolean repeatingBillingAdjustments = false;
     private boolean repeatingPayrollAdjustments = false;
     private String generalNotes = "";
@@ -47,6 +48,7 @@ public class HealthCheck implements Serializable {
         checkData.put("shiftsInDifferentStatuses", shiftsInDifferentStatuses);
         checkData.put("caregiversUsingTheApp", caregiversUsingTheApp);
         checkData.put("clientGeneralSchedulesConfigured", clientGeneralSchedulesConfigured);
+        checkData.put("checkCompletionDate", checkCompletionDate != null ? checkCompletionDate.toString() : null);
         checkData.put("lastBillingProcessDate", lastBillingProcessDate != null ? lastBillingProcessDate.toString() : null);
         checkData.put("lastPayrollProcessDate", lastPayrollProcessDate != null ? lastPayrollProcessDate.toString() : null);
         checkData.put("repeatingBillingAdjustments", repeatingBillingAdjustments);
@@ -61,6 +63,16 @@ public class HealthCheck implements Serializable {
     }
 
     // getters and setters
+
+
+    public LocalDate getCheckCompletionDate() {
+        return checkCompletionDate;
+    }
+
+    public void setCheckCompletionDate(LocalDate checkCompletionDate) {
+        this.checkCompletionDate = checkCompletionDate;
+    }
+
     public int getPriorMonthShiftCount() {
         return priorMonthShiftCount;
     }

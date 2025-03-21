@@ -164,10 +164,6 @@ public class OfficeListPanel extends JPanel implements ActionListener {
         String nameFilter = nameSearchField.getText().toUpperCase();
         int activeStatus =  statusSearch.getSelectedIndex();
 
-        // Loads inactive offices from the firestore DB.
-        if (activeStatus != 0) {
-            Database.getInstance().loadInactiveOffices();
-        }
 
         officeList = new ArrayList<>();
         for (Office i : Database.getInstance().getOfficeList()) {

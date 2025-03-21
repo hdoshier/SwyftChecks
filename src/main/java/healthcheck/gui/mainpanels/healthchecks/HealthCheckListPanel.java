@@ -4,6 +4,7 @@ import healthcheck.data.*;
 import healthcheck.data.firestore.Database;
 import healthcheck.gui.MainWindow;
 import healthcheck.gui.dialogs.HealthCheckGlobalSetDialog;
+import healthcheck.gui.dialogs.NewHealthCheckPeriodDialog;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -363,7 +364,13 @@ public class HealthCheckListPanel extends JPanel implements ActionListener {
         System.out.println(actionCommand);
 
         if (actionCommand.equals("addNew")) {
-            // TODO figure out if I want to implement this.
+            HealthCheckPeriod firstPeriod =  db.getHealthCheckPeriodList().getFirst();
+            if (firstPeriod.isPeriodComplete()) {
+                NewHealthCheckPeriodDialog diag = new NewHealthCheckPeriodDialog(parent);
+                diag.run();
+            } else {
+                JOptionPane.showMessageDialog(this, "The next period cannot be created until the current one is complete.", "Unable to Create New Period", JOptionPane.WARNING_MESSAGE);
+            }
         }
         if (actionCommand.equals("globalSet")) {
             HealthCheckGlobalSetDialog diag = new HealthCheckGlobalSetDialog(parent, this);

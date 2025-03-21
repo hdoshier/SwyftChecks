@@ -19,6 +19,15 @@ public class HealthCheckPeriod implements Serializable {
         this.addHealthChecks();
     }
 
+    public boolean isPeriodComplete() {
+        for (HealthCheck i : healthCheckList) {
+            if (i.getHealthCheckStatus() != 3) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public HashMap<String, Object> packagePeriod() {
         HashMap<String, Object> periodData = new HashMap<>();
         periodData.put("startDate", startDate.toString());

@@ -1,12 +1,15 @@
 package healthcheck.gui.dialogs;
 
 import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
 import healthcheck.data.HealthCheckPeriod;
+import healthcheck.data.firestore.Database;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.LocalDate;
 
 public class NewHealthCheckPeriodDialog extends JDialog implements ActionListener {
     private GridBagConstraints mainGbc;
@@ -25,18 +28,30 @@ public class NewHealthCheckPeriodDialog extends JDialog implements ActionListene
 
         mainGbc.gridx = 0;
         mainGbc.gridy = 0;
+        mainGbc.gridwidth = 2;
         JLabel label = new JLabel("Select the start and end date for the new health check period.");
         this.add(label, mainGbc);
 
+        LocalDate lastPeriodEndDate = Database.getInstance().getHealthCheckPeriodList().getFirst().getEndDate();
+
+        LocalDate firstDate = lastPeriodEndDate.plusDays(1);
+
         mainGbc.gridy = 1;
-        startdate = new DatePicker();
+        DatePickerSettings setting = new DatePickerSettings();
+        startdate = new DatePicker(setting);
+        startdate.setDate(firstDate);
         this.add(startdate, mainGbc);
+        setting.setDateRangeLimits(firstDate, null);
 
         mainGbc.gridy = 2;
-        enddate = new DatePicker();
+        setting = new DatePickerSettings();
+        enddate = new DatePicker(setting);
+        enddate.setDate(firstDate.plusMonths(3));
         this.add(enddate, mainGbc);
+        setting.setDateRangeLimits(firstDate, null);
 
         mainGbc.gridy = 3;
+        mainGbc.gridwidth = 1;
         JButton save = new JButton("Save");
         save.setActionCommand("save");
         save.addActionListener(this);
@@ -54,7 +69,7 @@ public class NewHealthCheckPeriodDialog extends JDialog implements ActionListene
     public void actionPerformed(ActionEvent e) {
         String actionCommand = e.getActionCommand();
         if (actionCommand.equals("save")) {
-            //hostPanel.createNewPeriod(startdate.getDate(), enddate.getDate());
+            Database.getInstance().addNewHealthCheckPeriod(startdate.getDate(), enddate.getDate());
         }
         this.dispose();
     }

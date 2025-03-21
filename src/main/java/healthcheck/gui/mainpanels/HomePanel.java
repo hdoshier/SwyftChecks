@@ -29,11 +29,11 @@ public class HomePanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(MyGlobalVariables.SWYFTOPS_BLUE);
 
-        // Get the current period (assuming the first one is latest)
+        // Get the current period
         HealthCheckPeriod currentPeriod = Database.getInstance().getHealthCheckPeriodList().getFirst();
 
         // North: Title
-        JLabel titleLabel = new JLabel("Health Check Dashboard", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("SwyftChecks Dashboard", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setForeground(Color.WHITE);
         add(titleLabel, BorderLayout.NORTH);

@@ -2,12 +2,19 @@ package healthcheck.data.firestore;
 
 import com.google.cloud.firestore.Firestore;
 import healthcheck.data.HealthCheck;
+import healthcheck.data.HealthCheckPeriod;
 import healthcheck.data.Office;
 
 import java.time.LocalDate;
 import java.util.*;
 
 public class WriteData {
+
+    public static void createNewHealthCheckPeriod(HealthCheckPeriod period) {
+        Firestore db = Database.getFirestore();
+        //add period to db
+        db.collection("healthCheckPeriods").document(period.getIdentifier()).set(period.packagePeriod());
+    }
 
     public static void saveOffice(Office office) {
         // pushes the data to the database

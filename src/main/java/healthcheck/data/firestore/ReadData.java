@@ -74,11 +74,7 @@ public class ReadData {
         String officeCode = office.getOfficeCode();
         DocumentReference document;
         Firestore db = Database.getFirestore();
-        if (office.isActiveOffice()) {
-            document = db.collection("offices").document(officeCode);
-        } else {
-            document = db.collection("inactiveOffices").document(officeCode);
-        }
+        document = db.collection("offices").document(officeCode);
 
         try {
             // Get the document snapshot
@@ -95,25 +91,6 @@ public class ReadData {
             e.printStackTrace();
         }
         return null;
-    }
-
-
-    public static ArrayList<Office> getInactiveOfficeList() {
-        Firestore firestore = Database.getFirestore();
-        // get collection from db
-        ApiFuture<QuerySnapshot> query = firestore.collection("inactiveOffices").get();
-
-        try {
-            QuerySnapshot querySnapshot = query.get();
-            ArrayList<Office> list = new ArrayList<>(querySnapshot.size());
-            for (QueryDocumentSnapshot document : querySnapshot) {
-                list.add(createOfficeFromData(document.getId(), document));
-            }
-            return list;
-        }catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>(1);
-        }
     }
 
 
