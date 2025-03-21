@@ -5,15 +5,23 @@ import healthcheck.data.HealthCheck;
 import healthcheck.data.HealthCheckPeriod;
 import healthcheck.data.Office;
 
-import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
 
 public class WriteData {
 
     public static void createNewHealthCheckPeriod(HealthCheckPeriod period) {
         Firestore db = Database.getFirestore();
         //add period to db
-        db.collection("healthCheckPeriods").document(period.getIdentifier()).set(period.packagePeriod());
+        db.collection("healthCheckPeriods").document(period.getPeriodRange()).set(period.packagePeriod());
+    }
+
+    public static void updateHealthCheckInFirestore(HealthCheckPeriod period, HealthCheck check) {
+        Firestore firestore = Database.getFirestore();
+        HashMap<String, Object> checkData = check.packageHealthCheck();
+
+        firestore.collection("healthCheckPeriods")
+                .document(period.getPeriodRange())
+                .update("healthChecks." + check.getOfficeCode(), checkData);
     }
 
     public static void saveOffice(Office office) {

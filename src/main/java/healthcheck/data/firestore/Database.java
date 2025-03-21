@@ -26,7 +26,7 @@ public class Database {
         firestore = initializeFirebase();
         settings = MySettings.getInstance();
         officeList = ReadData.getActiveOfficeList();
-        healthCheckPeriodList = new ArrayList<>();
+        healthCheckPeriodList = ReadData.getHealthCheckPeriods();
     }
 
     public static Database getInstance() {
@@ -42,9 +42,10 @@ public class Database {
                 return null;
             }
         }
-        HealthCheckPeriod period = new HealthCheckPeriod(start, end);
+
+        HealthCheckPeriod period = new HealthCheckPeriod(start, end, healthCheckPeriodList.getFirst().getUniqueId() + 1);
         healthCheckPeriodList.addFirst(period);
-        //WriteData.createNewHealthCheckPeriod(period);
+        WriteData.createNewHealthCheckPeriod(period);
         return period;
     }
 

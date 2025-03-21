@@ -57,7 +57,7 @@ public class HealthCheck implements Serializable {
         checkData.put("assignedTo", assignedTo);
         checkData.put("healthCheckStatus", healthCheckStatus);
         checkData.put("flagedForLeadershipReview", flagedForLeadershipReview);
-        checkData.put("growthNotes", generalNotes);
+        checkData.put("growthNotes", growthNotes);
         checkData.put("priorMonthShiftCount", priorMonthShiftCount);
         return checkData;
     }

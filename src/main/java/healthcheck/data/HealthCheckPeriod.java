@@ -11,10 +11,12 @@ import java.util.HashMap;
 public class HealthCheckPeriod implements Serializable {
     private LocalDate startDate;
     private LocalDate endDate;
+    private int uniqueId;
     private ArrayList<HealthCheck> healthCheckList;
 
-    public HealthCheckPeriod(LocalDate startDate, LocalDate endDate) {
+    public HealthCheckPeriod(LocalDate startDate, LocalDate endDate, int id) {
         this.startDate = startDate;
+        this.uniqueId = id;
         this.endDate = endDate;
         this.addHealthChecks();
     }
@@ -32,7 +34,7 @@ public class HealthCheckPeriod implements Serializable {
         HashMap<String, Object> periodData = new HashMap<>();
         periodData.put("startDate", startDate.toString());
         periodData.put("endDate", endDate.toString());
-
+        periodData.put("uniqueId", uniqueId);
         HashMap<String, HashMap<String, Object>> healthChecksMap = new HashMap<>();
         for (HealthCheck i : healthCheckList) {
             healthChecksMap.put(i.getOfficeCode(), i.packageHealthCheck());
@@ -64,12 +66,20 @@ public class HealthCheckPeriod implements Serializable {
 
 
     // getters and setters
-    public String getIdentifier() {
+    public String getPeriodRange() {
         StringBuilder sb = new StringBuilder();
         sb.append(startDate.toString());
         sb.append(" - ");
         sb.append(endDate.toString());
         return sb.toString();
+    }
+
+    public int getUniqueId() {
+        return uniqueId;
+    }
+
+    public void setUniqueId(int uniqueId) {
+        this.uniqueId = uniqueId;
     }
 
     public ArrayList<HealthCheck> getHealthCheckList() {
